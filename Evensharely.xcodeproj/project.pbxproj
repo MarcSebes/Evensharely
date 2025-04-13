@@ -1,0 +1,765 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		12EE1BB32DA42C25006569D3 /* MyShareTarget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 12EE1BA92DA42C25006569D3 /* MyShareTarget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1279CC8B2DA1CEC600184701 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1279CC752DA1CEC500184701 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1279CC7C2DA1CEC500184701;
+			remoteInfo = Evensharely;
+		};
+		1279CC952DA1CEC600184701 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1279CC752DA1CEC500184701 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1279CC7C2DA1CEC500184701;
+			remoteInfo = Evensharely;
+		};
+		12EE1BB12DA42C25006569D3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1279CC752DA1CEC500184701 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 12EE1BA82DA42C25006569D3;
+			remoteInfo = MyShareTarget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1279CCC42DA1E7DE00184701 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				12EE1BB32DA42C25006569D3 /* MyShareTarget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		1279CC7D2DA1CEC500184701 /* Evensharely.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Evensharely.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1279CC8A2DA1CEC600184701 /* EvensharelyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EvensharelyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		1279CC942DA1CEC600184701 /* EvensharelyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EvensharelyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		12EE1BA92DA42C25006569D3 /* MyShareTarget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MyShareTarget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		12A253CE2DA842B3009F70CA /* Exceptions for "Evensharely" folder in "Evensharely" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1279CC7C2DA1CEC500184701 /* Evensharely */;
+		};
+		12EE1BB62DA42C25006569D3 /* Exceptions for "MyShareTarget" folder in "MyShareTarget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 12EE1BA82DA42C25006569D3 /* MyShareTarget */;
+		};
+		12EE1BBF2DA42E45006569D3 /* Exceptions for "Evensharely" folder in "MyShareTarget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				_Archive/LinkPreview2.swift,
+				Helpers/BadgeManager.swift,
+				Helpers/CloudKitManager.swift,
+				Helpers/Functions.swift,
+				Helpers/MetadataCache.swift,
+				Helpers/ReactionManager.swift,
+				Helpers/ReadLinkTracker.swift,
+				Models/Constants.swift,
+				Models/FavoriteLink.swift,
+				Models/LinkPreview.swift,
+				Models/LinkPreviewPlain.swift,
+				Models/SharedLink.swift,
+				Models/SharedLinkCard.swift,
+				Models/UserProfile.swift,
+			);
+			target = 12EE1BA82DA42C25006569D3 /* MyShareTarget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		1279CC7F2DA1CEC500184701 /* Evensharely */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				12A253CE2DA842B3009F70CA /* Exceptions for "Evensharely" folder in "Evensharely" target */,
+				12EE1BBF2DA42E45006569D3 /* Exceptions for "Evensharely" folder in "MyShareTarget" target */,
+			);
+			path = Evensharely;
+			sourceTree = "<group>";
+		};
+		1279CC8D2DA1CEC600184701 /* EvensharelyTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EvensharelyTests;
+			sourceTree = "<group>";
+		};
+		1279CC972DA1CEC600184701 /* EvensharelyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = EvensharelyUITests;
+			sourceTree = "<group>";
+		};
+		12EE1BAA2DA42C25006569D3 /* MyShareTarget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				12EE1BB62DA42C25006569D3 /* Exceptions for "MyShareTarget" folder in "MyShareTarget" target */,
+			);
+			path = MyShareTarget;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1279CC7A2DA1CEC500184701 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC872DA1CEC600184701 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC912DA1CEC600184701 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12EE1BA62DA42C25006569D3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1279CC742DA1CEC500184701 = {
+			isa = PBXGroup;
+			children = (
+				1279CC7F2DA1CEC500184701 /* Evensharely */,
+				1279CC8D2DA1CEC600184701 /* EvensharelyTests */,
+				1279CC972DA1CEC600184701 /* EvensharelyUITests */,
+				12EE1BAA2DA42C25006569D3 /* MyShareTarget */,
+				1279CC7E2DA1CEC500184701 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		1279CC7E2DA1CEC500184701 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1279CC7D2DA1CEC500184701 /* Evensharely.app */,
+				1279CC8A2DA1CEC600184701 /* EvensharelyTests.xctest */,
+				1279CC942DA1CEC600184701 /* EvensharelyUITests.xctest */,
+				12EE1BA92DA42C25006569D3 /* MyShareTarget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1279CC7C2DA1CEC500184701 /* Evensharely */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1279CC9E2DA1CEC600184701 /* Build configuration list for PBXNativeTarget "Evensharely" */;
+			buildPhases = (
+				1279CC792DA1CEC500184701 /* Sources */,
+				1279CC7A2DA1CEC500184701 /* Frameworks */,
+				1279CC7B2DA1CEC500184701 /* Resources */,
+				1279CCC42DA1E7DE00184701 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				12EE1BB22DA42C25006569D3 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1279CC7F2DA1CEC500184701 /* Evensharely */,
+			);
+			name = Evensharely;
+			packageProductDependencies = (
+			);
+			productName = Evensharely;
+			productReference = 1279CC7D2DA1CEC500184701 /* Evensharely.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1279CC892DA1CEC600184701 /* EvensharelyTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1279CCA12DA1CEC600184701 /* Build configuration list for PBXNativeTarget "EvensharelyTests" */;
+			buildPhases = (
+				1279CC862DA1CEC600184701 /* Sources */,
+				1279CC872DA1CEC600184701 /* Frameworks */,
+				1279CC882DA1CEC600184701 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1279CC8C2DA1CEC600184701 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1279CC8D2DA1CEC600184701 /* EvensharelyTests */,
+			);
+			name = EvensharelyTests;
+			packageProductDependencies = (
+			);
+			productName = EvensharelyTests;
+			productReference = 1279CC8A2DA1CEC600184701 /* EvensharelyTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		1279CC932DA1CEC600184701 /* EvensharelyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1279CCA42DA1CEC600184701 /* Build configuration list for PBXNativeTarget "EvensharelyUITests" */;
+			buildPhases = (
+				1279CC902DA1CEC600184701 /* Sources */,
+				1279CC912DA1CEC600184701 /* Frameworks */,
+				1279CC922DA1CEC600184701 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1279CC962DA1CEC600184701 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				1279CC972DA1CEC600184701 /* EvensharelyUITests */,
+			);
+			name = EvensharelyUITests;
+			packageProductDependencies = (
+			);
+			productName = EvensharelyUITests;
+			productReference = 1279CC942DA1CEC600184701 /* EvensharelyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		12EE1BA82DA42C25006569D3 /* MyShareTarget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 12EE1BB72DA42C25006569D3 /* Build configuration list for PBXNativeTarget "MyShareTarget" */;
+			buildPhases = (
+				12EE1BA52DA42C25006569D3 /* Sources */,
+				12EE1BA62DA42C25006569D3 /* Frameworks */,
+				12EE1BA72DA42C25006569D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				12EE1BAA2DA42C25006569D3 /* MyShareTarget */,
+			);
+			name = MyShareTarget;
+			packageProductDependencies = (
+			);
+			productName = MyShareTarget;
+			productReference = 12EE1BA92DA42C25006569D3 /* MyShareTarget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1279CC752DA1CEC500184701 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1630;
+				LastUpgradeCheck = 1630;
+				TargetAttributes = {
+					1279CC7C2DA1CEC500184701 = {
+						CreatedOnToolsVersion = 16.3;
+					};
+					1279CC892DA1CEC600184701 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = 1279CC7C2DA1CEC500184701;
+					};
+					1279CC932DA1CEC600184701 = {
+						CreatedOnToolsVersion = 16.3;
+						TestTargetID = 1279CC7C2DA1CEC500184701;
+					};
+					12EE1BA82DA42C25006569D3 = {
+						CreatedOnToolsVersion = 16.3;
+					};
+				};
+			};
+			buildConfigurationList = 1279CC782DA1CEC500184701 /* Build configuration list for PBXProject "Evensharely" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1279CC742DA1CEC500184701;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 1279CC7E2DA1CEC500184701 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1279CC7C2DA1CEC500184701 /* Evensharely */,
+				1279CC892DA1CEC600184701 /* EvensharelyTests */,
+				1279CC932DA1CEC600184701 /* EvensharelyUITests */,
+				12EE1BA82DA42C25006569D3 /* MyShareTarget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1279CC7B2DA1CEC500184701 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC882DA1CEC600184701 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC922DA1CEC600184701 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12EE1BA72DA42C25006569D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1279CC792DA1CEC500184701 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC862DA1CEC600184701 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1279CC902DA1CEC600184701 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		12EE1BA52DA42C25006569D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1279CC8C2DA1CEC600184701 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1279CC7C2DA1CEC500184701 /* Evensharely */;
+			targetProxy = 1279CC8B2DA1CEC600184701 /* PBXContainerItemProxy */;
+		};
+		1279CC962DA1CEC600184701 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1279CC7C2DA1CEC500184701 /* Evensharely */;
+			targetProxy = 1279CC952DA1CEC600184701 /* PBXContainerItemProxy */;
+		};
+		12EE1BB22DA42C25006569D3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 12EE1BA82DA42C25006569D3 /* MyShareTarget */;
+			targetProxy = 12EE1BB12DA42C25006569D3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1279CC9C2DA1CEC600184701 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		1279CC9D2DA1CEC600184701 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1279CC9F2DA1CEC600184701 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Evensharely/Evensharely.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Evensharely/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SquirrelBear;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.Evensharely;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1279CCA02DA1CEC600184701 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Evensharely/Evensharely.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Evensharely/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SquirrelBear;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.Evensharely;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1279CCA22DA1CEC600184701 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.EvensharelyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Evensharely.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Evensharely";
+			};
+			name = Debug;
+		};
+		1279CCA32DA1CEC600184701 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.EvensharelyTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Evensharely.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Evensharely";
+			};
+			name = Release;
+		};
+		1279CCA52DA1CEC600184701 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.EvensharelyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Evensharely;
+			};
+			name = Debug;
+		};
+		1279CCA62DA1CEC600184701 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.EvensharelyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Evensharely;
+			};
+			name = Release;
+		};
+		12EE1BB42DA42C25006569D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MyShareTarget/MyShareTarget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyShareTarget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SquirrelBear;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.Evensharely.MyShareTarget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		12EE1BB52DA42C25006569D3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MyShareTarget/MyShareTarget.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VG9WA4M4EA;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MyShareTarget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = SquirrelBear;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.1;
+				PRODUCT_BUNDLE_IDENTIFIER = Dadpool.Evensharely.MyShareTarget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1279CC782DA1CEC500184701 /* Build configuration list for PBXProject "Evensharely" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1279CC9C2DA1CEC600184701 /* Debug */,
+				1279CC9D2DA1CEC600184701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1279CC9E2DA1CEC600184701 /* Build configuration list for PBXNativeTarget "Evensharely" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1279CC9F2DA1CEC600184701 /* Debug */,
+				1279CCA02DA1CEC600184701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1279CCA12DA1CEC600184701 /* Build configuration list for PBXNativeTarget "EvensharelyTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1279CCA22DA1CEC600184701 /* Debug */,
+				1279CCA32DA1CEC600184701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1279CCA42DA1CEC600184701 /* Build configuration list for PBXNativeTarget "EvensharelyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1279CCA52DA1CEC600184701 /* Debug */,
+				1279CCA62DA1CEC600184701 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		12EE1BB72DA42C25006569D3 /* Build configuration list for PBXNativeTarget "MyShareTarget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12EE1BB42DA42C25006569D3 /* Debug */,
+				12EE1BB52DA42C25006569D3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1279CC752DA1CEC500184701 /* Project object */;
+}
