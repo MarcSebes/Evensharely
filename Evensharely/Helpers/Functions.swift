@@ -38,3 +38,4 @@ func triggerHapticFeedback() {
     generator.prepare()
     generator.impactOccurred()
 }
+

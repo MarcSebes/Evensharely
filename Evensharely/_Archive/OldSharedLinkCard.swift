@@ -5,6 +5,7 @@
 //  Created by Marc Sebes on 4/11/25.
 //
 
+/*
 import SwiftUI
 import CloudKit
 
@@ -103,7 +104,8 @@ struct SharedLinkCard: View {
 
             Divider()
         }
-        .padding(.top, 8)
+        .padding(.horizontal)
+        .padding(.vertical, 4)
     }
 
     func senderOrRecipientsText() -> String {
@@ -125,4 +127,4 @@ struct SharedLinkCard: View {
         return formatter.string(from: date)
     }
 }
-
+*/

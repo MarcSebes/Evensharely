@@ -49,6 +49,7 @@ struct SharedLink: Identifiable {
         record["date"] = date
         return record
     }
+    
 }
 
 struct Reaction: Identifiable {

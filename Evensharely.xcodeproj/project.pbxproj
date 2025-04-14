@@ -74,6 +74,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				_Archive/LinkPreview2.swift,
+				_Archive/OldSharedLinkCard.swift,
 				Helpers/BadgeManager.swift,
 				Helpers/CloudKitManager.swift,
 				Helpers/Functions.swift,
@@ -85,7 +86,6 @@
 				Models/LinkPreview.swift,
 				Models/LinkPreviewPlain.swift,
 				Models/SharedLink.swift,
-				Models/SharedLinkCard.swift,
 				Models/UserProfile.swift,
 			);
 			target = 12EE1BA82DA42C25006569D3 /* MyShareTarget */;

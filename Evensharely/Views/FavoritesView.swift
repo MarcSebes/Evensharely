@@ -13,70 +13,52 @@ struct FavoritesView: View {
     @State private var links: [SharedLink] = []
     @State private var reactionsByLink: [CKRecord.ID: [Reaction]] = [:]
     private let reactionManager = ReactionManager()
+    @State private var favoriteLinkIDs: Set<CKRecord.ID> = []
 
     var body: some View {
         NavigationView {
             ScrollView {
-                ForEach(links.sorted(by: { $0.date > $1.date })) { link in
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(formattedDate(link.date))
-                            Spacer()
-                            if !link.tags.isEmpty {
-                                Text(link.tags.joined(separator: ", "))
-                                    .font(.caption2)
-                            }
-                            Spacer()
-                            Text(link.senderFullName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                        .font(.caption2)
-                        .foregroundColor(.gray)
-                        .padding(.horizontal)
-
-                        Button(action: {
-                            UIApplication.shared.open(link.url)
-                        }) {
-                            LinkPreviewPlain(previewURL: link.url)
-                                .aspectRatio(contentMode: .fit)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .shadow(radius: 5)
-                                .padding(4)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-
-                        HStack {
-                            ForEach(["👍", "❤️", "😂", "😮"], id: \.self) { emoji in
-                                let count = reactionsByLink[link.id]?.filter { $0.reactionType == emoji }.count ?? 0
-                                let userSelected = userReaction(for: link) == emoji
-
-                                Button(action: {
-                                    Task {
-                                        do {
-                                            try await reactionManager.addOrUpdateReaction(linkID: link.id, userID: icloudID, reactionType: emoji)
-                                            loadReactions(for: link)
-                                        } catch {
-                                            print("❌ Failed to react: \(error)")
-                                        }
-                                    }
-                                }) {
-                                    Text("\(emoji) \(count)")
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 4)
-                                        .background(userSelected ? Color.blue.opacity(0.2) : Color.clear)
-                                        .cornerRadius(8)
+                if links.isEmpty {
+                    VStack(spacing: 16) {
+                        Image("AppIcon")
+                        Image(systemName: "star")
+                            .font(.system(size: 48))
+                            .foregroundColor(.gray)
+                        Text("You Don't Have Any Favorites Yet! Don't worry, SquirrelBear can be your favorite friend!")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                        
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
+                } else {
+                    ForEach(links.sorted(by: { $0.date > $1.date })) { link in
+                        SharedLinkCard(
+                            link: link,
+                            icloudID: icloudID,
+                            reactions: reactionsByLink[link.id] ?? [],
+                            isRead: nil,
+                            isFavorited: favoriteLinkIDs.contains(link.id),
+                            showReadDot: false,
+                            showSender: true,
+                            onOpen: {
+                                UIApplication.shared.open(link.url)
+                            },
+                            onFavoriteToggle: {
+                                toggleFavorite(for: link)
+                            },
+                            onReact: { emoji in
+                                Task {
+                                    try? await reactionManager.addOrUpdateReaction(linkID: link.id, userID: icloudID, reactionType: emoji)
+                                    loadReactions(for: link)
                                 }
                             }
-                        }
-                        .font(.caption)
+                        )
                         .padding(.horizontal)
-                    }
-                    .padding(.vertical, 4)
+                        .padding(.vertical, 4)
+                    } //end foreach
+                    .padding()
                 }
-                .padding()
             }
             .refreshable {
                 loadFavorites()
@@ -113,6 +95,49 @@ struct FavoritesView: View {
         }
     }
 
+    private func toggleFavorite(for link: SharedLink) {
+        let privateDB = CloudKitConfig.container.privateCloudDatabase
+        let linkReference = CKRecord.Reference(recordID: link.id, action: .none)
+
+        if favoriteLinkIDs.contains(link.id) {
+            let predicate = NSPredicate(format: "userIcloudID == %@ AND linkReference == %@", icloudID, linkReference)
+            let query = CKQuery(recordType: "FavoriteLink", predicate: predicate)
+
+            privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { result in
+                switch result {
+                case .failure(let error):
+                    print("❌ Failed to query for FavoriteLink to delete: \(error)")
+                case .success(let (matchResults, _)):
+                    if let recordID = matchResults.first?.0 {
+                        privateDB.delete(withRecordID: recordID) { _, error in
+                            if let error = error {
+                                print("❌ Error deleting FavoriteLink: \(error)")
+                            } else {
+                                DispatchQueue.main.async {
+                                    favoriteLinkIDs.remove(link.id)
+                                    links.removeAll { $0.id == link.id }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            let favorite = FavoriteLink(userIcloudID: icloudID, linkReference: linkReference)
+            let record = favorite.toRecord()
+
+            privateDB.save(record) { _, error in
+                if let error = error {
+                    print("❌ Error saving FavoriteLink: \(error)")
+                } else {
+                    DispatchQueue.main.async {
+                        favoriteLinkIDs.insert(link.id)
+                    }
+                }
+            }
+        }
+    }
+    
     func userReaction(for link: SharedLink) -> String? {
         reactionsByLink[link.id]?.first(where: { $0.userID == icloudID })?.reactionType
     }

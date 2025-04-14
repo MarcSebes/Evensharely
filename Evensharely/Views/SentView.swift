@@ -21,6 +21,7 @@ struct SentView: View {
         let names: [String]
     }
 
+    
     private let reactionManager = ReactionManager()
 
     var body: some View {
@@ -32,12 +33,24 @@ struct SentView: View {
                         link: link,
                         icloudID: icloudID,
                         reactions: reactionsByLink[link.id] ?? [],
-                        profilesByID: profilesByID,
-                        onReactionTap: { emoji, names in
-                            selectedReactionDetail = ReactionDetail(emoji: emoji, names: names)
+                        isRead: nil,                     // No read tracking needed for sent links
+                        isFavorited: false,             // Not relevant for SentView
+                        showReadDot: false,             // No red dot
+                        showSender: false,              // You are the sender
+                        recipientText: recipientNames(for: link),
+                        onOpen: {
+                            UIApplication.shared.open(link.url)
+                        },
+                        onFavoriteToggle: nil,          // No need to favorite links you've sent
+                        onReact: { emoji in
+                            Task {
+                                try? await reactionManager.addOrUpdateReaction(linkID: link.id, userID: icloudID, reactionType: emoji)
+                                loadReactions(for: link)
+                            }
                         }
                     )
-                    .padding(.top, 8)
+                    .padding(.horizontal)
+                    .padding(.vertical, 4)
                     
                     
                 }
