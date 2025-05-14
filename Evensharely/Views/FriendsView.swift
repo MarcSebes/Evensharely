@@ -85,7 +85,7 @@ struct FriendsView: View {
                 }
 
                 let friendIDs = profile.friends
-                CloudKitManager.shared.fetchUserProfiles(forIcloudIDs: friendIDs) { result in
+                CloudKitManager.shared.fetchUserProfiles(forappleUserIDs: friendIDs) { result in
                     isLoading = false
                     switch result {
                     case .success(let users):

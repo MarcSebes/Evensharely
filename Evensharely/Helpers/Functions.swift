@@ -39,3 +39,22 @@ func triggerHapticFeedback() {
     generator.impactOccurred()
 }
 
+func logThis(text: String, target: String = "APP", type: String = "") {
+
+   
+    let target = target.uppercased()
+    let type = type.uppercased()
+    if type != "" {
+        NSLog("[\(target)] [\(type)]: \(text)")
+    } else {
+        NSLog("[\(target)]: \(text)")
+    }
+}
+
+func printAllUserDefaults() {
+    let allValues = UserDefaults.standard.dictionaryRepresentation()
+
+    for (key, value) in allValues {
+        print("\(key) = \(value)")
+    }
+}

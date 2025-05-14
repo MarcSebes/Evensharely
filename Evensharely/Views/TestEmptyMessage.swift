@@ -8,20 +8,32 @@
 import SwiftUI
 
 struct TestEmptyMessage: View {
+    let subtitles = ["Gathering Nuts...", "Hunting for Food...", "Hibernating..."]
+        @State private var randomItem: String? = nil
+    
     var body: some View {
-        VStack(spacing: 30) {
-            Image(systemName: "star")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
-            Text("You Don't Have Any Favorites Yet!")
-                .font(.headline)
-            Text("SquirrelBear can be your favorite!")
-                .font(.title2)
-                .foregroundColor(.secondary)
+        VStack {
             Image("Friend")
                 .resizable()
-                .frame(width: 300, height: 300)
+                .scaledToFit()
+                .frame(width: 200, height: 200)
+                .foregroundColor(.accentColor)
             
+            Text("SquirrelBear")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding(.top)
+            HStack{
+                
+                Text(randomItem ?? "Run...")
+                    .font(.headline)
+                    .padding(.top, 50)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color("IconBackground"))
+        .onAppear {
+            randomItem = subtitles.randomElement()
         }
     }
 }

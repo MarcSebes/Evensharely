@@ -73,18 +73,23 @@
 		12EE1BBF2DA42E45006569D3 /* Exceptions for "Evensharely" folder in "MyShareTarget" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				_Archive/LinkPreview2.swift,
-				_Archive/OldSharedLinkCard.swift,
+				Helpers/AppDebug.swift,
 				Helpers/BadgeManager.swift,
 				Helpers/CloudKitManager.swift,
+				Helpers/FriendInvitationManager.swift,
 				Helpers/Functions.swift,
 				Helpers/MetadataCache.swift,
+				Helpers/ProfileCacheOld.swift,
+				Helpers/ProfileDebugView.swift,
 				Helpers/ReactionManager.swift,
 				Helpers/ReadLinkTracker.swift,
+				Helpers/SharedLinkCache.swift,
+				Models/CachedSharedLink.swift,
 				Models/Constants.swift,
 				Models/FavoriteLink.swift,
 				Models/LinkPreview.swift,
 				Models/LinkPreviewPlain.swift,
+				Models/ProfileCache.swift,
 				Models/SharedLink.swift,
 				Models/UserProfile.swift,
 			);

@@ -8,11 +8,45 @@
 import SwiftUI
 
 struct TagEditorView: View {
-    var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-    }
-}
+    @Environment(\.dismiss) private var dismiss
 
-#Preview {
-    TagEditorView()
+    @State private var draftTags: String
+    private let initialTags: [String]
+    private let onSave: ([String]) -> Void
+
+    init(sharedLink: SharedLink, onSave: @escaping ([String]) -> Void) {
+        self.initialTags = sharedLink.tags
+        _draftTags = State(initialValue: sharedLink.tags.joined(separator: ", "))
+        self.onSave = onSave
+    }
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Tags (comma‑separated)") {
+                    TextField("e.g. dogs, animals", text: $draftTags)
+                        .autocapitalization(.none)
+                }
+            }
+            .navigationTitle("Edit Tags")
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        // Split & trim into an array of non‑empty tags
+                        let tags = draftTags
+                            .split(separator: ",")
+                            .map { $0.trimmingCharacters(in: .whitespaces) }
+                            .filter { !$0.isEmpty }
+                        onSave(tags)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
 }
