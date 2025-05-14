@@ -125,6 +125,9 @@ final class AuthenticationViewModel: NSObject, ObservableObject {
     
     /// Sign the user out and clear credentials
     func signOut() {
+        // Delete CloudKit subscriptions before clearing credentials
+        SubscriptionManager.shared.deleteAllSubscriptions()
+        
         // Clear stored credentials
         UserDefaults.standard.removeObject(forKey: "evensharely_icloudID")
         UserDefaults.standard.removeObject(forKey: "evensharely_fullName")
@@ -135,6 +138,9 @@ final class AuthenticationViewModel: NSObject, ObservableObject {
             groupDefaults.removeObject(forKey: "evensharely_fullName")
             groupDefaults.synchronize()
         }
+        
+        // Clear badges
+        BadgeManager.clearBadge()
         
         // Update UI state
         DispatchQueue.main.async {
@@ -240,6 +246,7 @@ final class AuthenticationViewModel: NSObject, ObservableObject {
     }
 
     /// Persists the current user's Apple ID and fullName into both standard and App Group defaults, then sets `isSignedIn`.
+    // Updated finalization for sign-in that also sets up notifications
     private func finalizeSignIn(_ appleUserID: String, fullName: String) {
         print("[AuthVM] finalizeSignIn: ID = \(appleUserID) fullName = \(fullName)")
 
@@ -254,8 +261,25 @@ final class AuthenticationViewModel: NSObject, ObservableObject {
             groupDefaults.synchronize()
             print("[AuthVM] Synced to group defaults: \(appleUserID), \(fullName)")
         }
+        
+        // C) Setup CloudKit Subscriptions for this user
+        SubscriptionManager.shared.setupSubscriptions()
+        
+        // D) Register for push notifications
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("[AuthVM] ❌ Error requesting notification permissions: \(error.localizedDescription)")
+            } else if granted {
+                print("[AuthVM] ✅ Notification permissions granted")
+                DispatchQueue.main.async {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+            } else {
+                print("[AuthVM] ⚠️ Notification permissions denied")
+            }
+        }
 
-        // C) Trigger UI update
+        // E) Trigger UI update
         DispatchQueue.main.async {
             self.isSignedIn = true
         }

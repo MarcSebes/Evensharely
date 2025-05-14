@@ -74,6 +74,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Helpers/AppDebug.swift,
+				Helpers/AppDelegate.swift,
 				Helpers/BadgeManager.swift,
 				Helpers/CloudKitManager.swift,
 				Helpers/FriendInvitationManager.swift,
@@ -84,6 +85,7 @@
 				Helpers/ReactionManager.swift,
 				Helpers/ReadLinkTracker.swift,
 				Helpers/SharedLinkCache.swift,
+				Helpers/SubscriptionManager.swift,
 				Models/CachedSharedLink.swift,
 				Models/Constants.swift,
 				Models/FavoriteLink.swift,

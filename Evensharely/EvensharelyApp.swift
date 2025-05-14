@@ -9,37 +9,39 @@ import SwiftUI
 
 @main
 struct EvensharelyApp: App {
-
+    // Register the AppDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     @StateObject private var auth = AuthenticationViewModel()
     @State private var isInitializing = true
     
     var body: some Scene {
-      WindowGroup {
-        Group {
-          if isInitializing {
-            // Optional splash screen or loading indicator
-            LoadingView()
-              .onAppear {
-                // Give a moment for credentials check to complete
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                  isInitializing = false
+        WindowGroup {
+            Group {
+                if isInitializing {
+                    // Optional splash screen or loading indicator
+                    LoadingView()
+                        .onAppear {
+                            // Give a moment for credentials check to complete
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                isInitializing = false
+                            }
+                        }
+                } else if auth.isSignedIn {
+                    MainTabView()
+                } else {
+                    SignInView()
                 }
-              }
-          } else if auth.isSignedIn {
-            MainTabView()
-          } else {
-            SignInView()
-          }
+            }
+            .environmentObject(auth)
         }
-        .environmentObject(auth)
-      }
     }
-  }
+}
 
 // Optional loading view to show while checking credentials
 struct LoadingView: View {
     let subtitles = ["Gathering Nuts...", "Hunting for Food...", "Hibernating..."]
-        @State private var randomItem: String? = nil
+    @State private var randomItem: String? = nil
     
     var body: some View {
         VStack {
