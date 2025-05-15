@@ -2,9 +2,6 @@
 //  SubscriptionManager.swift
 //  Evensharely
 //
-//  Created by Marc Sebes on 5/14/25.
-//
-
 
 import CloudKit
 import UserNotifications
@@ -121,22 +118,35 @@ class SubscriptionManager {
     
     /// Debug function to list all active subscriptions
     func listAllSubscriptions() {
+        // The modern way to fetch all subscriptions
         let operation = CKFetchSubscriptionsOperation.fetchAllSubscriptionsOperation()
+        var fetchedSubscriptions: [String: CKSubscription] = [:]
         
-        operation.fetchSubscriptionCompletionBlock = { subscriptionsResult, error in
-            if let error = error {
+        // Set the per-subscription result handler
+        operation.perSubscriptionResultBlock = { subscriptionID, result in
+            switch result {
+            case .success(let subscription):
+                fetchedSubscriptions[subscriptionID] = subscription
+            case .failure(let error):
+                print("❌ Error fetching subscription \(subscriptionID): \(error.localizedDescription)")
+            }
+        }
+        
+        // Set the final result handler
+        operation.fetchSubscriptionsResultBlock = { result in
+            switch result {
+            case .success:
+                if fetchedSubscriptions.isEmpty {
+                    print("📝 No active subscriptions found")
+                } else {
+                    print("📝 Found \(fetchedSubscriptions.count) active subscriptions:")
+                    for (id, subscription) in fetchedSubscriptions {
+                        print("  - \(id): \(subscription)")
+                    }
+                }
+                
+            case .failure(let error):
                 print("❌ Error fetching subscriptions: \(error.localizedDescription)")
-                return
-            }
-            
-            guard let subscriptions = subscriptionsResult, !subscriptions.isEmpty else {
-                print("📝 No active subscriptions found")
-                return
-            }
-            
-            print("📝 Found \(subscriptions.count) active subscriptions:")
-            for (id, subscription) in subscriptions {
-                print("  - \(id): \(subscription)")
             }
         }
         

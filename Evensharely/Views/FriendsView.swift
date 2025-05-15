@@ -2,119 +2,146 @@
 //  FriendsView.swift
 //  Evensharely
 //
-//  Created by Marc Sebes on 4/8/25.
+//  Created by Marc Sebes on 5/14/25.
 //
 
 import SwiftUI
-import CloudKit
-import LinkPresentation
 
 struct FriendsView: View {
-    @AppStorage("evensharely_icloudID") var icloudID: String = ""
-    @State private var friends: [UserProfile] = []
-    @State private var isLoading = false
-    @State private var showShareSheet = false
+    @State private var showInviteFriendSheet = false
+    @State private var showAcceptInvitationSheet = false
+    @State var appleUserID: String = UserDefaults.standard.string(forKey: "evensharely_icloudID") ?? ""
+    
+    @State private var currentProfile: UserProfile?
+    @State private var friendProfiles: [UserProfile] = []
+    @State private var errorMessage: String?
 
+    
     var body: some View {
-        NavigationView {
-            VStack {
-                if isLoading {
-                    ProgressView("Loading friends...")
-                } else if friends.isEmpty {
-                    Text("You haven’t added any friends yet.")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                } else {
-                    VStack{
-                        VStack{
-                            List(friends) { user in
-                                HStack(spacing: 12) {
-                                    if let image = user.image {
+        NavigationStack{
+            List{
+                // MARK: - Friends Section
+
+                    Section("Your Friends") {
+                        ForEach(friendProfiles, id: \.id) { friend in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    if let image = friend.image {
                                         Image(uiImage: image)
                                             .resizable()
                                             .scaledToFill()
-                                            .frame(width: 40, height: 40)
+                                            .frame(width: 50, height: 50)
                                             .clipShape(Circle())
+                                            .shadow(radius: 4)
                                     } else {
                                         Circle()
-                                            .fill(Color(.systemGray4))
-                                            .frame(width: 40, height: 40)
+                                            .fill(Color(.systemGray5))
+                                            .frame(width: 50, height: 50)
                                     }
                                     
-                                    VStack(alignment: .leading) {
-                                        Text(user.fullName)
-                                            .font(.headline)
-                                        Text(user.username)
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                    }
                                 }
-                                .padding(.vertical, 4)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(friend.fullName)
+                                        .font(.headline)
+                                        .foregroundStyle(Color(.systemGray))
+                                    Text("\(friend.email ?? "–")")
+                                        .font(.caption)
+                                        .foregroundStyle(Color(.systemGray))
+                               }
                             }
+                            .padding(.vertical, 6)
                         }
-                        .background(Color.white.opacity(0.9))
                     }
                     
-                }
-                Button("Invite a Friend") {
-                    showShareSheet = true
-                }
-                .buttonStyle(.borderedProminent)
-                .padding(.top)
-                .sheet(isPresented: $showShareSheet) {
-                    let inviteText = "Hey! Join me on Evensharely — it’s a simple way to share links. Use this code to connect with me: \n\n\(icloudID)"
-                    ActivityView(activityItems: [inviteText])
+
+                Section(header: Text("Invitations")) {
+                    /// Invitation Start
+                    Button(action: {
+                        showInviteFriendSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "person.badge.plus")
+                                .frame(width: 24, height: 24)
+                            Text("Invite a Friend")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Button(action: {
+                        showAcceptInvitationSheet = true
+                    }) {
+                        HStack {
+                            Image(systemName: "qrcode")
+                                .frame(width: 24, height: 24)
+                            Text("Accept an Invitation")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    /// Invitation End
                 }
             }
-            .padding()
-            .navigationTitle("Your Friends")
+            .sheet(isPresented: $showInviteFriendSheet) {
+                InviteFriendView(userID: appleUserID)
+            }
+            .listStyle(InsetGroupedListStyle())
+            .navigationTitle("Friends")
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showAcceptInvitationSheet) {
+                AcceptInvitationView(
+                    userID: appleUserID,
+                    onInvitationAccepted: {
+                        // Refresh friends after accepting an invitation
+                        loadProfiles()
+                    }
+                )
+            }
         }
-        .onAppear(perform: loadFriends)
+        .onAppear {
+            loadProfiles()
+        }
     }
+    
+    private func loadProfiles() {
+        // 1) Grab the current AppleID from App-Group defaults
+        let suite = UserDefaults(suiteName: "group.com.marcsebes.evensharely")
+       
+       // Use the AppleID for the User or fallback to Mine
+        let appleID = suite?.string(forKey: "evensharely_icloudID") ?? "000866.c7c9a90c75834932b91822b2739c37ce.2033"
 
-    func loadFriends() {
-        guard !icloudID.isEmpty else { return }
-        isLoading = true
-
-        CloudKitManager.shared.fetchUserProfile(forIcloudID: icloudID) { result in
+        // 2) Fetch the current user's profile
+     
+        CloudKitManager.shared.fetchPrivateUserProfile(forAppleUserID: appleID) { result in
             switch result {
-            case .success(let profile):
-                guard let profile = profile else {
-                    isLoading = false
-                    return
-                }
+            case .failure(let err):
+                errorMessage = err.localizedDescription
 
-                let friendIDs = profile.friends
-                CloudKitManager.shared.fetchUserProfiles(forappleUserIDs: friendIDs) { result in
-                    isLoading = false
-                    switch result {
-                    case .success(let users):
-                        self.friends = users
-                    case .failure(let error):
-                        print("❌ Failed to fetch friends: \(error.localizedDescription)")
+            case .success(let profile):
+                self.currentProfile = profile
+        
+
+                // 3) Fetch each friend
+                CloudKitManager.shared.fetchUserProfiles(forappleUserIDs: profile.friends) { res in
+                    switch res {
+                    case .failure(let err):
+                        errorMessage = err.localizedDescription
+                    case .success(let friends):
+                        self.friendProfiles = friends
                     }
                 }
-
-            case .failure(let error):
-                isLoading = false
-                print("❌ Failed to load profile: \(error.localizedDescription)")
             }
         }
+        
     }
 }
 
-struct ActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    let applicationActivities: [UIActivity]? = nil
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-    }
 
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-
-#Preview {
-    FriendsView(icloudID: "_e625da7a3ca0e60d88415fa21c57927c")
-    
+#Preview ("FriendView") {
+    FriendsView()
 }

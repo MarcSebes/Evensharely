@@ -153,27 +153,7 @@ struct UserProfileEditView: View {
             appleUserID: appleUserID,
             email: email
         )
-        
-        //        CloudKitManager.shared.saveUserProfile(profile, image: selectedImage) { result in
-        //            DispatchQueue.main.async {
-        //                isSaving = false
-        //                switch result {
-        //                case .success():
-        //                    dismiss()
-        //                case .failure(let error):
-        //                    errorMessage = error.localizedDescription
-        //                }
-        //            }
-        //        }
-        //    }
-        
-        //    private func generateUsername(from name: String) -> String {
-        //        let allowed = CharacterSet.alphanumerics
-        //        let slug = name.lowercased()
-        //            .components(separatedBy: allowed.inverted)
-        //            .joined()
-        //        return slug.isEmpty ? "user_\(UUID().uuidString.prefix(6))" : slug
-        //    }
+ 
     }
 }
 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct TestEmptyMessage: View {
+struct TestView: View {
     let subtitles = ["Gathering Nuts...", "Hunting for Food...", "Hibernating..."]
         @State private var randomItem: String? = nil
     
@@ -39,5 +39,5 @@ struct TestEmptyMessage: View {
 }
 
 #Preview {
-    TestEmptyMessage()
+    TestView()
 }

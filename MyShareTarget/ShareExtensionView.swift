@@ -114,15 +114,19 @@ struct ShareExtensionView: View {
                     // Link Preview
                     Group {
                         Text("Preview").font(.headline)
-                        if let metadata = linkMetadata {
-                            LinkPreview(metadata: metadata)
-                                .frame(maxWidth: .infinity, maxHeight: 200)
-                                .cornerRadius(12)
-                                .shadow(radius: 2)
+                        VStack {
+                            if let metadata = linkMetadata {
+                                LinkPreview(metadata: metadata)
+                                    .frame(maxWidth: .infinity, maxHeight: 200)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 2)
+                           
                         } else {
+                            
+                            
                             Text(sharedURL.absoluteString)
                                 .font(.callout)
-                                .foregroundColor(.blue)
+                                .foregroundColor(Color(.systemGray6))
                                 .multilineTextAlignment(.leading)
                                 .lineLimit(4)
                                 .truncationMode(.middle)
@@ -130,6 +134,10 @@ struct ShareExtensionView: View {
                                 .background(Color(.systemGray6))
                                 .cornerRadius(8)
                         }
+                            
+                            
+                        }
+                        .frame(height: 205)
                     }
 
                     // Tags Input

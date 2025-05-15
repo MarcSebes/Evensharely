@@ -40,7 +40,7 @@ struct EvensharelyApp: App {
 
 // Optional loading view to show while checking credentials
 struct LoadingView: View {
-    let subtitles = ["Gathering Nuts...", "Hunting for Food...", "Hibernating..."]
+    let subtitles = ["Gathering Nuts...", "Hunting for Food...", "Hibernating...", "Loading 26% of nuts...", "Stealing picnic baskets...", "Reading books by Deb Pilutti...", "Feeding on links..."]
     @State private var randomItem: String? = nil
     
     var body: some View {

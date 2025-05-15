@@ -464,53 +464,57 @@ class CloudKitManager {
     // MARK: - NEW: Favorites Management
     
     /// Fetch favorite links for a user
-    func fetchFavoriteLinks(for userID: String, completion: @escaping (Result<[SharedLink], Error>) -> Void) {
-        // Get favorite link references from private database
-        let privateDB = container.privateCloudDatabase
-        let predicate = NSPredicate(format: "userIcloudID == %@", userID)
+    func fetchFavoriteLinks(userIcloudID: String, completion: @escaping ([SharedLink]) -> Void) {
+        let predicate = NSPredicate(format: "userIcloudID == %@", userIcloudID)
         let query = CKQuery(recordType: "FavoriteLink", predicate: predicate)
-        
-        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: ["linkReference"], resultsLimit: CKQueryOperation.maximumResults) { result in
-            switch result {
+
+        let privateDB = CKContainer(identifier: "iCloud.com.marcsebes.evensharely").privateCloudDatabase
+
+        privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: CKQueryOperation.maximumResults) { fetchResult in
+            switch fetchResult {
+            case .failure(let error):
+                print("❌ Failed to fetch FavoriteLink records: \(error)")
+                completion([])
             case .success(let (matchResults, _)):
-                let favoriteRecords = matchResults.compactMap { _, recResult in
-                    if case let .success(record) = recResult { return record }
-                    return nil
-                }
-                
-                // Extract references to favorited links
-                let linkReferences = favoriteRecords.compactMap { record -> CKRecord.Reference? in
-                    return record["linkReference"] as? CKRecord.Reference
-                }
-                
-                if linkReferences.isEmpty {
-                    DispatchQueue.main.async {
-                        completion(.success([]))
+                let linkIDs: [CKRecord.ID] = matchResults.compactMap { (_, result) in
+                    switch result {
+                    case .success(let record):
+                        return (record["linkReference"] as? CKRecord.Reference)?.recordID
+                    case .failure(let error):
+                        print("⚠️ Error with FavoriteLink record: \(error)")
+                        return nil
                     }
+                }
+
+                guard !linkIDs.isEmpty else {
+                    completion([])
                     return
                 }
+
+                let publicDB = CKContainer(identifier: "iCloud.com.marcsebes.evensharely").publicCloudDatabase
                 
-                // Fetch the actual SharedLink records using the references
-                let linkRecordIDs = linkReferences.map { $0.recordID }
-                let operation = CKFetchRecordsOperation(recordIDs: linkRecordIDs)
-                operation.fetchRecordsCompletionBlock = { fetchedRecords, error in
-                    DispatchQueue.main.async {
-                        if let error = error {
-                            completion(.failure(error))
-                            return
-                        }
-                        
-                        let links = fetchedRecords?.values.map { SharedLink(record: $0) } ?? []
-                        completion(.success(links))
+                // Using the modern fetchRecordsResultBlock instead of fetchRecordsCompletionBlock
+                let fetchOp = CKFetchRecordsOperation(recordIDs: linkIDs)
+                var sharedLinks: [SharedLink] = []
+                
+                // Set up the per-record handler
+                fetchOp.perRecordResultBlock = { recordID, result in
+                    switch result {
+                    case .success(let record):
+                        sharedLinks.append(SharedLink(record: record))
+                    case .failure(let error):
+                        print("⚠️ Failed to fetch SharedLink \(recordID): \(error)")
                     }
                 }
                 
-                self.publicDB.add(operation)
-                
-            case .failure(let error):
-                DispatchQueue.main.async {
-                    completion(.failure(error))
+                // Set up the result handler using the modern API
+                fetchOp.fetchRecordsResultBlock = { result in
+                    DispatchQueue.main.async {
+                        completion(sharedLinks)
+                    }
                 }
+
+                publicDB.add(fetchOp)
             }
         }
     }

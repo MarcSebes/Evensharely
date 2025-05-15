@@ -127,45 +127,6 @@ struct AcceptInvitationView: View {
     }
     
     private func acceptInvitation() {
-        acceptInvitationWithFinalApproach()
-    }
-}
-
-extension AcceptInvitationView {
-    func acceptInvitationWithSimplifiedApproach() {
-        guard !invitationCode.isEmpty else { return }
-        
-        isProcessing = true
-        errorMessage = nil
-        
-        // Trim and uppercase the code for consistency
-        let cleanCode = invitationCode.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-        
-        // Use the new simplified method
-        FriendInvitationManager.shared.simplifiedAcceptInvitation(code: cleanCode, byUserID: userID) { result in
-            DispatchQueue.main.async {
-                isProcessing = false
-                
-                switch result {
-                case .success(let friendUserID):
-                    // Try to get the friend's name from the profile cache
-                    let cachedUsers = ProfileCache.load()
-                    if let cachedFriend = cachedUsers.first(where: { $0.id == friendUserID }) {
-                        successFriendName = cachedFriend.fullName
-                    }
-                    
-                    showSuccess = true
-                    
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
-                    showError = true
-                }
-            }
-        }
-    }
-}
-extension AcceptInvitationView {
-    func acceptInvitationWithFinalApproach() {
         guard !invitationCode.isEmpty else { return }
         
         isProcessing = true
@@ -197,6 +158,7 @@ extension AcceptInvitationView {
         }
     }
 }
+
 
 #Preview {
     AcceptInvitationView(userID: previewID)

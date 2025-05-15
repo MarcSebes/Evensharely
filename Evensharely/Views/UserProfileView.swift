@@ -14,6 +14,7 @@
 //
 import SwiftUI
 import CloudKit
+import UIKit
 
 /// ViewModel for UserProfileView using MVVM
 final class UserProfileViewModel: ObservableObject {
@@ -25,6 +26,7 @@ final class UserProfileViewModel: ObservableObject {
     @Published var email: String = ""    // NEW: store email
     @Published var appleUserID: String = ""
     @Published var name: String = ""
+    
     
     // MARK: – Link stats
     @Published var sentCount: Int = 0
@@ -117,6 +119,7 @@ final class UserProfileViewModel: ObservableObject {
 }
 
 struct UserProfileView: View {
+    @Environment(\.colorScheme) var colorScheme
     @StateObject private var vm: UserProfileViewModel
     @ObservedObject private var notificationManager = NotificationManager.shared
     private var showOffers: Bool = false
@@ -124,6 +127,8 @@ struct UserProfileView: View {
     @State private var showInviteFriendSheet = false
     @State private var showAcceptInvitationSheet = false
     @State private var showDebugView = false
+    @State private var isPresented: Bool = false
+    
     
     init(appleUserID: String = UserDefaults.standard.string(forKey: "evensharely_icloudID") ?? "") {
         _vm = StateObject(wrappedValue: UserProfileViewModel(appleUserID: appleUserID))
@@ -166,7 +171,7 @@ struct UserProfileView: View {
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 } else {
-                                    Text("sample@example.com")
+                                    Text("No email Provided")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -174,56 +179,64 @@ struct UserProfileView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
                     // Friends row
-                    NavigationLink(destination: FriendsEditView()) {
+                    NavigationLink(destination: FriendsView()) {
                         HStack {
                             Image(systemName: "person.2.fill")
+                                .font(.system(size: 24))
                                 .foregroundColor(.primary)
-                                .frame(width: 24, height: 24)
+                                .frame(width: 50, height: 50)
+                                .background(colorScheme == .dark ? Color(.systemBackground) : Color(.systemGray6))
+                                .clipShape(Circle())
                             VStack(alignment: .leading) {
-                                Text("Friends").font(.headline)
+                                Text("Your Friends").font(.headline)
                                 Text(vm.friendNamesText)
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
                                     .lineLimit(1)
+
                             }
                         }
                     }
+                    
+
                 } header: {
                     Text("Your Profile")
                 }
                 
-                // MARK: - Connections Section
-                Section(header: Text("Connections")) {
-                    Button(action: {
-                        showInviteFriendSheet = true
-                    }) {
-                        HStack {
-                            Image(systemName: "person.badge.plus")
-                                .frame(width: 24, height: 24)
-                            Text("Invite a Friend")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    
-                    Button(action: {
-                        showAcceptInvitationSheet = true
-                    }) {
-                        HStack {
-                            Image(systemName: "qrcode")
-                                .frame(width: 24, height: 24)
-                            Text("Accept Invitation")
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
+//                // MARK: - Friends Section
+//                Section(header: Text("Friends")) {
+//
+//                 /// Invitation Start
+//                    Button(action: {
+//                        showInviteFriendSheet = true
+//                    }) {
+//                        HStack {
+//                            Image(systemName: "person.badge.plus")
+//                                .frame(width: 24, height: 24)
+//                            Text("Invite a Friend")
+//                            Spacer()
+//                            Image(systemName: "chevron.right")
+//                                .font(.caption)
+//                                .foregroundColor(.secondary)
+//                        }
+//                    }
+//                    
+//                    Button(action: {
+//                        showAcceptInvitationSheet = true
+//                    }) {
+//                        HStack {
+//                            Image(systemName: "qrcode")
+//                                .frame(width: 24, height: 24)
+//                            Text("Accept Invitation")
+//                            Spacer()
+//                            Image(systemName: "chevron.right")
+//                                .font(.caption)
+//                                .foregroundColor(.secondary)
+//                        }
+//                    }
+//                    /// Invitation End
+//                }
                 
                 // MARK: - Stats Section
                  Section(header: Text("Your Stats")) {
@@ -256,6 +269,7 @@ struct UserProfileView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .foregroundStyle(.primary)
                     
                     // Badge Counter permission button
                     Button(action: {
@@ -276,14 +290,35 @@ struct UserProfileView: View {
                             }
                         }
                     }
+                    .foregroundStyle(.primary)
 
-                    
+                    // New Notification Settings Button
+                    Button(action: {
+                        if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "gear")
+                                .frame(width: 24, height: 24)
+                            Text("Open Notification Settings")
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                
+                        }
+                    }
+                    .foregroundStyle(.primary)
                 }
                 
                 // MARK: - Offers Section (if enabled)
                 if showOffers {
                     Section(header: Text("Premium Offers")) {
-                        Button(action: { /* action */ }) {
+                        Button(action: {
+                            //
+                            
+                        }) {
                             HStack {
                                 Image(systemName: "crown.fill")
                                     .foregroundColor(.yellow)
@@ -296,6 +331,7 @@ struct UserProfileView: View {
                                     .foregroundColor(.secondary)
                             }
                         }
+                        
                         
                         Button(action: { /* action */ }) {
                             HStack {
@@ -310,6 +346,13 @@ struct UserProfileView: View {
                                     .foregroundColor(.secondary)
                             }
                         }
+                        Button("Present alert") {
+                            isPresented = true
+                        }.alert("Alert title", isPresented: $isPresented, actions: {
+                            // Leave empty to use the default "OK" action.
+                        }, message: {
+                            Text("Alert message")
+                        })
                     }
                 }
                 
