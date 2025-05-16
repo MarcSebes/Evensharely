@@ -140,7 +140,7 @@ struct UserProfileView: View {
                 // MARK: - Profile Section
                 Section {
                     NavigationLink(destination: UserProfileEditView()) {
-                        HStack {
+                        HStack (spacing: 20){
                             if let image = vm.selectedImage {
                                 Image(uiImage: image)
                                     .resizable()
@@ -180,16 +180,22 @@ struct UserProfileView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     // Friends row
+
+                    
+
+                } header: {
+                    Text("Your Profile")
+                }
+                
+                // MARK: - Friends Section
+                Section(header: Text("Friends")) {
                     NavigationLink(destination: FriendsView()) {
-                        HStack {
+                        HStack (spacing: 20){
                             Image(systemName: "person.2.fill")
-                                .font(.system(size: 24))
+                                .frame(width: 24, height: 24)
                                 .foregroundColor(.primary)
-                                .frame(width: 50, height: 50)
-                                .background(colorScheme == .dark ? Color(.systemBackground) : Color(.systemGray6))
-                                .clipShape(Circle())
                             VStack(alignment: .leading) {
-                                Text("Your Friends").font(.headline)
+                                Text("Manage Friends").font(.headline)
                                 Text(vm.friendNamesText)
                                     .font(.caption2)
                                     .foregroundColor(.secondary)
@@ -197,59 +203,75 @@ struct UserProfileView: View {
 
                             }
                         }
+                        
                     }
-                    
+                 /// Invitation Start
+                    Button(action: {
+                        showInviteFriendSheet = true
+                    }) {
+                        HStack (spacing: 20){
+                            Image(systemName: "person.badge.plus")
+                                .frame(width: 24, height: 24)
+                            Text("Invite a New Friend")
 
-                } header: {
-                    Text("Your Profile")
+                        }
+                       
+                        
+                    }
+                    .buttonStyle(.navigation)
+                    
+                    
+                    Button(action: {
+                        showAcceptInvitationSheet = true
+                    }) {
+                        HStack (spacing: 20){
+                            Image(systemName: "qrcode")
+                                .frame(width: 24, height: 24)
+                            Text("Accept an Invite")
+                        }
+                      
+                    }
+                    .buttonStyle(.navigation)
+                    /// Invitation End
                 }
-                
-//                // MARK: - Friends Section
-//                Section(header: Text("Friends")) {
-//
-//                 /// Invitation Start
-//                    Button(action: {
-//                        showInviteFriendSheet = true
-//                    }) {
-//                        HStack {
-//                            Image(systemName: "person.badge.plus")
-//                                .frame(width: 24, height: 24)
-//                            Text("Invite a Friend")
-//                            Spacer()
-//                            Image(systemName: "chevron.right")
-//                                .font(.caption)
-//                                .foregroundColor(.secondary)
-//                        }
-//                    }
-//                    
-//                    Button(action: {
-//                        showAcceptInvitationSheet = true
-//                    }) {
-//                        HStack {
-//                            Image(systemName: "qrcode")
-//                                .frame(width: 24, height: 24)
-//                            Text("Accept Invitation")
-//                            Spacer()
-//                            Image(systemName: "chevron.right")
-//                                .font(.caption)
-//                                .foregroundColor(.secondary)
-//                        }
-//                    }
-//                    /// Invitation End
-//                }
                 
                 // MARK: - Stats Section
                  Section(header: Text("Your Stats")) {
-                     HStack(spacing: 16) {
-                         RecordCard(
-                             title: "Received Links",
-                             value: String(vm.receivedCount),
-                             icon: "tray.and.arrow.down")
-                         RecordCard(
-                             title: "Sent Links",
-                             value: String(vm.sentCount),
-                             icon: "paperplane")
+                     VStack (alignment: .leading) {
+                         VStack (alignment: .trailing){
+                             if vm.receivedCount > vm.sentCount {
+                                 Text("\"You have great friends. Remember, you can never share too much!\"")
+                                    
+                                 Text("-SquirrelBear\n")
+                                    
+                             } else if vm.receivedCount < vm.sentCount {
+                                 
+                                 Text("\"Keep it up, there is no such thing as oversharing!\"")
+                                 Text("-SquirrelBear\n")
+                             }
+                         }
+                         .frame(maxWidth: .infinity)
+                         .foregroundStyle(.secondary)
+   
+                         
+
+                        
+                         
+                         HStack(spacing: 16) {
+                             RecordCard(
+                                title: "Received Links",
+                                value: String(vm.receivedCount),
+                                icon: "tray.and.arrow.down")
+                             RecordCard(
+                                title: "Sent Links",
+                                value: String(vm.sentCount),
+                                icon: "paperplane")
+                         }
+
                      }
+
+                     
+                    
                  }
   
                 

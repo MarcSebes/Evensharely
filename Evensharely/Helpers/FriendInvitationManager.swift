@@ -71,6 +71,15 @@ class FriendInvitationManager {
             applicationActivities: nil
         )
         
+        // For iPad support (prevents crash on iPad)
+        if let popover = activityVC.popoverPresentationController {
+            popover.sourceView = viewController.view
+            popover.sourceRect = CGRect(x: viewController.view.bounds.midX,
+                                       y: viewController.view.bounds.midY,
+                                       width: 0, height: 0)
+            popover.permittedArrowDirections = []
+        }
+        
         activityVC.completionWithItemsHandler = { _, completed, _, _ in
             if completed {
                 print("[APPLOG] Invitation shared successfully")
@@ -78,7 +87,10 @@ class FriendInvitationManager {
             }
         }
         
-        viewController.present(activityVC, animated: true)
+        // Using the main window's rootViewController to present
+        DispatchQueue.main.async {
+            viewController.present(activityVC, animated: true)
+        }
     }
     
     // MARK: - Accept Invitation

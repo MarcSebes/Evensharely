@@ -30,6 +30,10 @@ struct ShareExtensionView: View {
     private let defaults = UserDefaults(suiteName: "group.com.marcsebes.evensharely")
     private let lastRecipientsKey = "evensharely_lastRecipients"
 
+    //MARK: - Show PopUp Alert Message
+    @State private var showAlert = false
+    
+    
     init(sharedURL: URL, onComplete: @escaping () -> Void) {
         self.sharedURL = sharedURL
         self.onComplete = onComplete
@@ -151,7 +155,7 @@ struct ShareExtensionView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Recipients").font(.headline)
                         if allUsers.isEmpty {
-                            Text("No friends available.")
+                            Text("To begin sharing, add friends in the app!")
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         } else {
@@ -186,17 +190,45 @@ struct ShareExtensionView: View {
 
                     // Action Buttons
                     VStack(spacing: 12) {
-                        Button(action: share) {
-                            HStack {
-                                Image(systemName: "paperplane.fill")
-                                Text("Send").fontWeight(.semibold)
+                        if !selectedRecipients.isEmpty {
+                            Button(action: share) {
+                                HStack {
+                                    Image(systemName: "paperplane.fill")
+                                    Text("Send").fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(12)
                             }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
                         }
+                        else {
+                            Button(action: {
+                                showAlert = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "paperplane.fill")
+                                    Text("Send").fontWeight(.semibold)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.gray)
+                                .foregroundStyle(Color.black.opacity(0.2))
+                                .cornerRadius(12)
+                                
+                            }
+                            .alert("SquirrelBear", isPresented: $showAlert) {
+                                Button("OK", role: .cancel) {
+                                    // Optional: Add any code to run when the button is tapped
+                                }
+                            }
+                            message: {
+                                Text("You Must Select at Least One Recipient Before Sharing.")
+                            }
+
+                        }
+                        Spacer()
                         Button("Cancel", role: .cancel) {
                             NSLog("[EXTLOG]: ⚪ Cancel tapped")
                             onComplete()
@@ -207,7 +239,7 @@ struct ShareExtensionView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Share with Evensharely")
+            .navigationTitle("Share with SquirrelBear")
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
@@ -215,4 +247,6 @@ struct ShareExtensionView: View {
             fetchMetadata(for: sharedURL)
         }
     }
+
 }
+

@@ -76,6 +76,7 @@
 				Helpers/AppDebug.swift,
 				Helpers/AppDelegate.swift,
 				Helpers/BadgeManager.swift,
+				Helpers/ButtonStyles.swift,
 				Helpers/CloudKitManager.swift,
 				Helpers/FriendInvitationManager.swift,
 				Helpers/Functions.swift,

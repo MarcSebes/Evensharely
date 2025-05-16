@@ -6,13 +6,15 @@
 //
 
 import SwiftUI
+import MessageUI
 
 struct InviteFriendView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var invitationCode = ""
     @State private var isGeneratingCode = false
-    @State private var isShowingShareSheet = false
+    @State private var isMessageComposePresented = false
     @State private var showCopyAlert = false
+    @State private var canSendMessages = MFMessageComposeViewController.canSendText()
     
     let userID: String
     
@@ -36,7 +38,7 @@ struct InviteFriendView: View {
                         .fontWeight(.semibold)
                     
                     InstructionRow(number: 1, text: "Share this code with your friend")
-                    InstructionRow(number: 2, text: "They select 'Accept Invitation' in their profile")
+                    InstructionRow(number: 2, text: "They select 'Accept an Invie' in their profile")
                     InstructionRow(number: 3, text: "They enter the code and you are friends forever!")
                 }
                 .padding()
@@ -63,7 +65,7 @@ struct InviteFriendView: View {
                                     .progressViewStyle(CircularProgressViewStyle())
                                     .padding(.horizontal)
                             } else {
-                                Text("Generate Invitation Code")
+                                Text("Generate Invite Code")
                                     .fontWeight(.semibold)
                             }
                         }
@@ -75,9 +77,16 @@ struct InviteFriendView: View {
                         .disabled(isGeneratingCode)
                     } else {
                         Button(action: {
-                            shareInvitation()
+                            if canSendMessages {
+                                isMessageComposePresented = true
+                            } else {
+                                // Handle devices that can't send messages
+                                UIPasteboard.general.string = invitationCode
+                                showCopyAlert = true
+                            }
                         }) {
-                            Label("Share Invitation", systemImage: "square.and.arrow.up")
+                            Label(canSendMessages ? "Send Invite to a Friend" : "Copy Invite",
+                                  systemImage: canSendMessages ? "message.fill" : "doc.on.doc")
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -91,7 +100,7 @@ struct InviteFriendView: View {
                 .padding(.horizontal)
 
                 VStack(spacing: 12) {
-                    Text("Your unique invitation code")
+                    Text("Your unique invite code")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
@@ -134,30 +143,24 @@ struct InviteFriendView: View {
                 }
                 .padding(.horizontal)
                 
-                // Instructions
-//                if !invitationCode.isEmpty {
-//                    VStack(alignment: .leading, spacing: 12) {
-//                        Text("How it works:")
-//                            .font(.subheadline)
-//                            .fontWeight(.semibold)
-//                        
-//                        InstructionRow(number: 1, text: "Share this code with your friend")
-//                        InstructionRow(number: 2, text: "They go to 'Accept Invitation' in their profile")
-//                        InstructionRow(number: 3, text: "They enter the code to connect with you")
-//                    }
-//                    .padding()
-//                    .background(Color(.systemGray6))
-//                    .cornerRadius(12)
-//                    .padding()
-//                }
             }
+            .sheet(isPresented: $isMessageComposePresented) {
+                            MessageComposeView(
+                                recipients: [], // User will select recipient
+                                body: "Join me on Squirrel Bear!\n Use this invite code: \(invitationCode)",
+                                completion: { _ in
+                                    isMessageComposePresented = false
+                                }
+                            )
+                        }
             .navigationTitle("Invite a Friend")
             .navigationBarTitleDisplayMode(.inline)
             .alert("Code Copied", isPresented: $showCopyAlert) {
                 Button("OK", role: .cancel) { }
             } message: {
-                Text("Invitation code copied to clipboard")
+                Text("Invite code copied to clipboard")
             }
+            
         }
     }
     
@@ -169,21 +172,6 @@ struct InviteFriendView: View {
             invitationCode = FriendInvitationManager.shared.generateInvitationCode(for: userID)
             isGeneratingCode = false
         }
-    }
-    
-    private func shareInvitation() {
-        // We need to get a reference to the UIViewController to present the share sheet
-        print("Trying to Share Invitation...")
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = windowScene.windows.first?.rootViewController else {
-            return
-        }
-        
-        FriendInvitationManager.shared.shareInvitation(
-            code: invitationCode,
-            from: rootViewController) {
-                // Optional: handle completion
-            }
     }
 }
 
@@ -209,6 +197,41 @@ struct InstructionRow: View {
     }
 }
 
+// Message Compose View
+struct MessageComposeView: UIViewControllerRepresentable {
+    var recipients: [String]
+    var body: String
+    var completion: (MessageComposeResult) -> Void
+    
+    func makeUIViewController(context: Context) -> MFMessageComposeViewController {
+        let controller = MFMessageComposeViewController()
+        controller.messageComposeDelegate = context.coordinator
+        controller.recipients = recipients
+        controller.body = body
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: MFMessageComposeViewController, context: Context) {}
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, MFMessageComposeViewControllerDelegate {
+        var parent: MessageComposeView
+        
+        init(_ parent: MessageComposeView) {
+            self.parent = parent
+        }
+        
+        func messageComposeViewController(_ controller: MFMessageComposeViewController,
+                                         didFinishWith result: MessageComposeResult) {
+            controller.dismiss(animated: true) {
+                self.parent.completion(result)
+            }
+        }
+    }
+}
 #Preview {
     InviteFriendView(userID: previewID)
 }

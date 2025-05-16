@@ -50,7 +50,7 @@ struct MainTabView: View {
             // UserProfile Tab
             UserProfileView()
             .tabItem {
-                Label("UserProfile", systemImage: "person.circle")
+                Label("Profile", systemImage: "person.circle")
             }
             
             
