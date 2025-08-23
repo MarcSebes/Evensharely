@@ -26,6 +26,7 @@ final class UserProfileViewModel: ObservableObject {
     @Published var email: String = ""    // NEW: store email
     @Published var appleUserID: String = ""
     @Published var name: String = ""
+    @Published var friendCount: Int = 0
     
     
     // MARK: – Link stats
@@ -87,6 +88,7 @@ final class UserProfileViewModel: ObservableObject {
                     self?.name = profile.fullName
                     self?.selectedImage = profile.image
                     self?.email = profile.email ?? ""
+                    self?.friendCount = profile.friends.count
                 }
                 if profile.fullName.isEmpty {
                     self?.fullName = profile.fullName
@@ -128,6 +130,7 @@ struct UserProfileView: View {
     @State private var showAcceptInvitationSheet = false
     @State private var showDebugView = false
     @State private var isPresented: Bool = false
+    @ObservedObject private var preferences = AppPreferences.shared
     
     
     init(appleUserID: String = UserDefaults.standard.string(forKey: "evensharely_icloudID") ?? "") {
@@ -145,16 +148,16 @@ struct UserProfileView: View {
                                 Image(uiImage: image)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 50, height: 50)
+                                    .frame(width: 60, height: 60)
                                     .clipShape(Circle())
                                     .shadow(radius: 2)
                             } else {
                                 Circle()
                                     .fill(Color(.systemGray5))
-                                    .frame(width: 50, height: 50)
+                                    .frame(width: 60, height: 60)
                                     .overlay(Text("Add").font(.caption))
                             }
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: 10) {
                                 if !vm.name.isEmpty {
                                     Text(vm.name)
                                         .font(.headline)
@@ -165,7 +168,7 @@ struct UserProfileView: View {
                                     Text("First Last")
                                         .font(.headline)
                                 }
-                                
+                                /*
                                 if !vm.email.isEmpty {
                                     Text(vm.email)
                                         .font(.caption)
@@ -174,6 +177,28 @@ struct UserProfileView: View {
                                     Text("No email Provided")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
+                                }
+                                 */
+                                HStack (spacing: 30){
+                                    VStack (alignment: .leading){
+                                        Text(String(vm.sentCount))
+                                            
+                                        Text("Shared")
+                                            .font(.caption)
+                                    }
+
+                                    VStack (alignment: .leading){
+                                        Text(String(vm.receivedCount))
+                                        Text("Received")
+                                            .font(.caption)
+                                    }
+
+                                    VStack(alignment: .leading) {
+                                        Text(String(vm.friendCount))
+                                        Text("Friends")
+                                            .font(.caption)
+                                    }
+
                                 }
                             }
                         }
@@ -236,17 +261,17 @@ struct UserProfileView: View {
                 }
                 
                 // MARK: - Stats Section
-                 Section(header: Text("Your Stats")) {
+                 Section(header: Text("Inspiration")) {
                      VStack (alignment: .leading) {
                          VStack (alignment: .trailing){
                              if vm.receivedCount > vm.sentCount {
-                                 Text("\"You have great friends. Remember, you can never share too much!\"")
+                                 Text("\"You have great friends. Remember to share everything with them. Everything!\"")
                                     
                                  Text("-SquirrelBear\n")
                                     
                              } else if vm.receivedCount < vm.sentCount {
                                  
-                                 Text("\"Keep it up, there is no such thing as oversharing!\"")
+                                 Text("\"You already know there is no such thing as oversharing with your friends!\"")
                                  Text("-SquirrelBear\n")
                              }
                          }
@@ -257,16 +282,16 @@ struct UserProfileView: View {
 
                         
                          
-                         HStack(spacing: 16) {
-                             RecordCard(
-                                title: "Received Links",
-                                value: String(vm.receivedCount),
-                                icon: "tray.and.arrow.down")
-                             RecordCard(
-                                title: "Sent Links",
-                                value: String(vm.sentCount),
-                                icon: "paperplane")
-                         }
+//                         HStack(spacing: 16) {
+//                             RecordCard(
+//                                title: "Received Links",
+//                                value: String(vm.receivedCount),
+//                                icon: "tray.and.arrow.down")
+//                             RecordCard(
+//                                title: "Sent Links",
+//                                value: String(vm.sentCount),
+//                                icon: "paperplane")
+//                         }
 
                      }
 
@@ -329,6 +354,21 @@ struct UserProfileView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 
+                        }
+                    }
+                    .foregroundStyle(.primary)
+                    
+                    // Large or Small Inbox
+                    Button(action: {
+//  //
+                    }) {
+                        HStack {
+                            Image(systemName: "gear")
+                                .frame(width: 24, height: 24)
+                            
+                            
+                            Toggle("Use Condensed Inbox", isOn: $preferences.useCondensedInbox)
+
                         }
                     }
                     .foregroundStyle(.primary)

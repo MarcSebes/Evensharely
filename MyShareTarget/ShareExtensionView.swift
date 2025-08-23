@@ -112,37 +112,18 @@ struct ShareExtensionView: View {
 
     // MARK: - View Body
     var body: some View {
-        NavigationView {
-            ScrollView {
+        NavigationStack {
+            VStack {
                 VStack(spacing: 20) {
+
                     // Link Preview
-                    Group {
-                        Text("Preview").font(.headline)
-                        VStack {
-                            if let metadata = linkMetadata {
-                                LinkPreview(metadata: metadata)
-                                    .frame(maxWidth: .infinity, maxHeight: 200)
-                                    .cornerRadius(12)
-                                    .shadow(radius: 2)
-                           
-                        } else {
-                            
-                            
-                            Text(sharedURL.absoluteString)
-                                .font(.callout)
-                                .foregroundColor(Color(.systemGray6))
-                                .multilineTextAlignment(.leading)
-                                .lineLimit(4)
-                                .truncationMode(.middle)
-                                .padding(8)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
+                    Text("Preview").font(.headline)
+                    VStack {
+                        if let metadata = linkMetadata {
+                            LinkItemView(link: metadata.url?.absoluteString ?? "")
                         }
-                            
-                            
-                        }
-                        .frame(height: 205)
                     }
+                    .frame(height:100)
 
                     // Tags Input
                     VStack(alignment: .leading, spacing: 4) {
@@ -159,7 +140,7 @@ struct ShareExtensionView: View {
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         } else {
-                            LazyVStack(alignment: .leading, spacing: 0) {
+                            List{
                                 ForEach(allUsers, id: \ .id) { user in
                                     Button {
                                         if selectedRecipients.contains(user.id) {
@@ -173,69 +154,67 @@ struct ShareExtensionView: View {
                                             Spacer()
                                             if selectedRecipients.contains(user.id) {
                                                 Image(systemName: "checkmark.circle.fill")
-                                                    .foregroundColor(.blue)
+                                                    .foregroundStyle(Color("IconBackground"))
+                                            } else {
+                                                Image(systemName: "circle")
+                                                    .foregroundStyle(Color(Color.primary.opacity(0.1)))
                                             }
                                         }
-                                        .padding(.vertical, 8)
-                                        .padding(.horizontal)
-                                        .background(Color(.secondarySystemGroupedBackground))
-                                        .cornerRadius(10)
-                                        .padding(.vertical, 2)
+                                    }
+                                    .foregroundColor(.primary)
+                                }
+                            }
+                        }
+                        // Action Buttons
+                        VStack(spacing: 12) {
+                            if !selectedRecipients.isEmpty {
+                                Button(action: share) {
+                                    HStack {
+                                        Image(systemName: "paperplane.fill")
+                                        Text("Send").fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                                }
+                            }
+                            else {
+                                Button(action: {
+                                    showAlert = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "paperplane.fill")
+                                        Text("Send").fontWeight(.semibold)
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.gray)
+                                    .foregroundStyle(Color.black.opacity(0.2))
+                                    .cornerRadius(12)
+                                    
+                                }
+                                .alert("SquirrelBear", isPresented: $showAlert) {
+                                    Button("OK", role: .cancel) {
+                                        // Optional: Add any code to run when the button is tapped
                                     }
                                 }
+                                message: {
+                                    Text("You Must Select at Least One Recipient Before Sharing.")
+                                }
+
                             }
-                            .frame(maxHeight: 220)
+                           
+                            Button("Cancel", role: .cancel) {
+                                NSLog("[EXTLOG]: ⚪ Cancel tapped")
+                                onComplete()
+                            }
+                            .foregroundColor(.secondary)
                         }
+                       
                     }
 
-                    // Action Buttons
-                    VStack(spacing: 12) {
-                        if !selectedRecipients.isEmpty {
-                            Button(action: share) {
-                                HStack {
-                                    Image(systemName: "paperplane.fill")
-                                    Text("Send").fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                            }
-                        }
-                        else {
-                            Button(action: {
-                                showAlert = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "paperplane.fill")
-                                    Text("Send").fontWeight(.semibold)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.gray)
-                                .foregroundStyle(Color.black.opacity(0.2))
-                                .cornerRadius(12)
-                                
-                            }
-                            .alert("SquirrelBear", isPresented: $showAlert) {
-                                Button("OK", role: .cancel) {
-                                    // Optional: Add any code to run when the button is tapped
-                                }
-                            }
-                            message: {
-                                Text("You Must Select at Least One Recipient Before Sharing.")
-                            }
-
-                        }
-                        Spacer()
-                        Button("Cancel", role: .cancel) {
-                            NSLog("[EXTLOG]: ⚪ Cancel tapped")
-                            onComplete()
-                        }
-                        .foregroundColor(.secondary)
-                    }
-                    .padding(.top, 8)
                 }
                 .padding()
             }
