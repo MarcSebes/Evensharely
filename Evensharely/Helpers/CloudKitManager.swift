@@ -33,7 +33,8 @@ class CloudKitManager {
     ) {
         Task {
             do {
-                let result = try await errorHandler.performWithRetry(
+                // FIXED: Remove unused 'result' variable
+                try await errorHandler.performWithRetry(
                     operation: { [weak self] in
                         guard let self = self else { throw CloudKitError.invalidData("Manager deallocated") }
                         return try await self.saveOrUpdateUserProfileAsync(
@@ -114,7 +115,8 @@ class CloudKitManager {
     ) {
         Task {
             do {
-                let result = try await errorHandler.performWithRetry(
+                // FIXED: Remove unused 'result' variable
+                try await errorHandler.performWithRetry(
                     operation: { [weak self] in
                         guard let self = self else { throw CloudKitError.invalidData("Manager deallocated") }
                         return try await self.saveUserProfileAsync(profile, image: image)
@@ -560,10 +562,11 @@ class CloudKitManager {
     ) {
         Task {
             do {
+                // FIXED: Remove 'return' keyword since deleteRecord returns Void
                 try await errorHandler.performWithRetry(
                     operation: { [weak self] in
                         guard let self = self else { throw CloudKitError.invalidData("Manager deallocated") }
-                        return try await self.publicDB.deleteRecord(withID: link.id)
+                        try await self.publicDB.deleteRecord(withID: link.id)
                     },
                     maxAttempts: 2 // Fewer retries for delete operations
                 )
@@ -1183,11 +1186,15 @@ class CloudKitManager {
         let predicate = NSPredicate(format: "linkID == %@ AND userID == %@", linkID.recordName, userID)
         let query = CKQuery(recordType: "Reaction", predicate: predicate)
         
-        // Fixed line 347 - this was previously truncated
         let (matchResults, _) = try await publicDB.records(matching: query, resultsLimit: 1)
         
-        let recordID = matchResults.first?.0
-       
+        // FIXED: Use underscore since we're not using the recordID variable
+        guard let recordIDToDelete = matchResults.first?.0 else {
+            // No reaction found to delete - this is not an error
+            return
+        }
         
+        // Delete the reaction record
+        try await publicDB.deleteRecord(withID: recordIDToDelete)
     }
 }
