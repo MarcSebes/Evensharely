@@ -37,6 +37,12 @@ class LinkViewModel: ObservableObject {
     private let reactionManager = ReactionManager()
     private var cancellables = Set<AnyCancellable>()
     
+    // Add tasks for cancellation
+    private var loadInboxTask: Task<Void, Never>?
+    private var loadSentTask: Task<Void, Never>?
+    private var loadFavoritesTask: Task<Void, Never>?
+    private var loadReactionsTask: Task<Void, Never>?
+    
     var userID: String {
         didSet {
             if oldValue != userID {
@@ -52,14 +58,34 @@ class LinkViewModel: ObservableObject {
         // Load cached links
         inboxLinks = SharedLinkCache.load()
         
+        setupSubscriptions()
+    }
+    
+    private func setupSubscriptions() {
         // Automatically update badge count when unread links change
+        // FIXED: Properly handle weak self to prevent retain cycles
         $inboxLinks
             .debounce(for: .seconds(0.5), scheduler: RunLoop.main)
             .sink { [weak self] links in
                 guard let self = self else { return }
-                BadgeManager.updateBadgeCount(for: links, userID: userID)
+                BadgeManager.updateBadgeCount(for: links, userID: self.userID)
             }
             .store(in: &cancellables)
+    }
+    
+    // FIXED: Add deinit to ensure cleanup
+    deinit {
+        // Cancel all ongoing tasks
+        loadInboxTask?.cancel()
+        loadSentTask?.cancel()
+        loadFavoritesTask?.cancel()
+        loadReactionsTask?.cancel()
+        
+        // Cancel all Combine subscriptions
+        cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
+        
+        print("✅ LinkViewModel deallocated properly")
     }
     
     // MARK: - Link Filters
@@ -84,6 +110,12 @@ class LinkViewModel: ObservableObject {
     // MARK: - Reset Methods
     
     private func resetAll() {
+        // Cancel any ongoing operations
+        loadInboxTask?.cancel()
+        loadSentTask?.cancel()
+        loadFavoritesTask?.cancel()
+        loadReactionsTask?.cancel()
+        
         resetInboxPagination()
         resetSentPagination()
         inboxLinks = []
@@ -106,12 +138,14 @@ class LinkViewModel: ObservableObject {
     // MARK: - Refresh Methods
     
     func refreshInbox() {
+        loadInboxTask?.cancel()
         resetInboxPagination()
         loadFavorites()
         loadInboxLinks()
     }
     
     func refreshSent() {
+        loadSentTask?.cancel()
         resetSentPagination()
         loadSentLinks()
     }
@@ -154,10 +188,12 @@ class LinkViewModel: ObservableObject {
         
         print("🗓️ Fetching inbox from \(formattedDate(startDate)) to \(formattedDate(endDate))")
         
+        // FIXED: Use weak self in all closures to prevent retain cycles
         CloudKitManager.shared.fetchSharedLinks(from: startDate, to: endDate) { [weak self] result in
             guard let self = self else { return }
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.isLoadingInbox = false
                 
                 switch result {
@@ -205,18 +241,7 @@ class LinkViewModel: ObservableObject {
                     SharedLinkCache.save(self.inboxLinks)
                     
                     // Load reactions for new links
-                    Task {
-                        let reactionMap = await self.reactionManager.loadAllReactions(
-                            for: newLinks.map { $0.id },
-                            userID: self.userID
-                        )
-                        
-                        DispatchQueue.main.async {
-                            for (key, value) in reactionMap {
-                                self.reactionsByLink[key] = value
-                            }
-                        }
-                    }
+                    self.loadReactionsForLinks(newLinks)
                     
                     // Update badge count
                     BadgeManager.updateBadgeCount(for: self.inboxLinks, userID: self.userID)
@@ -250,32 +275,32 @@ class LinkViewModel: ObservableObject {
             return
         }
         
-        CloudKitManager.shared.fetchSentLinks(for: userID, fromDate: startDate, toDate: now) { [weak self] result in
+        // Cancel any existing task
+        loadSentTask?.cancel()
+        
+        // Create new task with cancellation support
+        loadSentTask = Task { [weak self] in
             guard let self = self else { return }
             
-            DispatchQueue.main.async {
-                self.isLoadingSent = false
-                self.allSentLinksLoaded = true // Only load once for sent links
+            // FIXED: Use weak self in CloudKit callbacks
+            CloudKitManager.shared.fetchSentLinks(for: self.userID, fromDate: startDate, toDate: now) { [weak self] result in
+                guard let self = self else { return }
                 
-                switch result {
-                case .success(let fetched):
-                    self.sentLinks = fetched.sorted(by: { $0.date > $1.date })
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.isLoadingSent = false
+                    self.allSentLinksLoaded = true // Only load once for sent links
                     
-                    Task {
-                        let reactionMap = await self.reactionManager.loadAllReactions(
-                            for: fetched.map { $0.id },
-                            userID: self.userID
-                        )
+                    switch result {
+                    case .success(let fetched):
+                        self.sentLinks = fetched.sorted(by: { $0.date > $1.date })
                         
-                        DispatchQueue.main.async {
-                            for (key, value) in reactionMap {
-                                self.reactionsByLink[key] = value
-                            }
-                        }
+                        // Load reactions for sent links
+                        self.loadReactionsForLinks(fetched)
+                        
+                    case .failure(let error):
+                        print("❌ Failed to fetch sent links: \(error.localizedDescription)")
                     }
-                    
-                case .failure(let error):
-                    print("❌ Failed to fetch sent links: \(error.localizedDescription)")
                 }
             }
         }
@@ -286,13 +311,22 @@ class LinkViewModel: ObservableObject {
     func loadFavorites() {
         isLoadingFavorites = true
         
-        loadFavoritedLinks(userIcloudID: userID) { [weak self] fetchedLinks in
+        // Cancel any existing task
+        loadFavoritesTask?.cancel()
+        
+        loadFavoritesTask = Task { [weak self] in
             guard let self = self else { return }
             
-            DispatchQueue.main.async {
-                self.favoriteLinks = fetchedLinks.sorted(by: { $0.date > $1.date })
-                self.favoriteLinkIDs = Set(fetchedLinks.map { $0.id })
-                self.isLoadingFavorites = false
+            // FIXED: Use weak self in callbacks
+            loadFavoritedLinks(userIcloudID: self.userID) { [weak self] fetchedLinks in
+                guard let self = self else { return }
+                
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    self.favoriteLinks = fetchedLinks.sorted(by: { $0.date > $1.date })
+                    self.favoriteLinkIDs = Set(fetchedLinks.map { $0.id })
+                    self.isLoadingFavorites = false
+                }
             }
         }
     }
@@ -308,6 +342,7 @@ class LinkViewModel: ObservableObject {
             let predicate = NSPredicate(format: "userIcloudID == %@ AND linkReference == %@", userID, linkReference)
             let query = CKQuery(recordType: "FavoriteLink", predicate: predicate)
             
+            // FIXED: Use weak self in database operations
             privateDB.fetch(withQuery: query, inZoneWith: nil, desiredKeys: nil, resultsLimit: 1) { [weak self] result in
                 guard let self = self else { return }
                 
@@ -316,11 +351,13 @@ class LinkViewModel: ObservableObject {
                     print("❌ Failed to query for FavoriteLink to delete: \(error)")
                 case .success(let (matchResults, _)):
                     if let recordID = matchResults.first?.0 {
-                        privateDB.delete(withRecordID: recordID) { _, error in
+                        privateDB.delete(withRecordID: recordID) { [weak self] _, error in
+                            guard let self = self else { return }
                             if let error = error {
                                 print("❌ Error deleting FavoriteLink: \(error)")
                             } else {
-                                DispatchQueue.main.async {
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
                                     self.favoriteLinkIDs.remove(link.id)
                                     self.favoriteLinks.removeAll { $0.id == link.id }
                                 }
@@ -340,7 +377,8 @@ class LinkViewModel: ObservableObject {
                 if let error = error {
                     print("❌ Error saving FavoriteLink: \(error)")
                 } else {
-                    DispatchQueue.main.async {
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
                         self.favoriteLinkIDs.insert(link.id)
                         
                         // Find link in inbox or sent and add to favorites
@@ -362,16 +400,21 @@ class LinkViewModel: ObservableObject {
     }
     
     func addReaction(to link: SharedLink, emoji: String) {
-        Task {
-            try? await reactionManager.addOrUpdateReaction(linkID: link.id, userID: userID, reactionType: emoji)
-            loadReactions(for: link)
+        // Cancel any existing reaction task
+        loadReactionsTask?.cancel()
+        
+        loadReactionsTask = Task { [weak self] in
+            guard let self = self else { return }
+            try? await self.reactionManager.addOrUpdateReaction(linkID: link.id, userID: self.userID, reactionType: emoji)
+            self.loadReactions(for: link)
         }
     }
     
     func loadReactions(for link: SharedLink) {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             do {
-                let reactions = try await reactionManager.fetchReactions(for: link.id)
+                let reactions = try await self.reactionManager.fetchReactions(for: link.id)
                 DispatchQueue.main.async { [weak self] in
                     self?.reactionsByLink[link.id] = reactions
                 }
@@ -381,11 +424,30 @@ class LinkViewModel: ObservableObject {
         }
     }
     
+    // FIXED: New method to load reactions with proper memory management
+    private func loadReactionsForLinks(_ links: [SharedLink]) {
+        Task { [weak self] in
+            guard let self = self else { return }
+            let reactionMap = await self.reactionManager.loadAllReactions(
+                for: links.map { $0.id },
+                userID: self.userID
+            )
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                for (key, value) in reactionMap {
+                    self.reactionsByLink[key] = value
+                }
+            }
+        }
+    }
+    
     func deleteLink(_ link: SharedLink) {
         CloudKitManager.shared.deleteSharedLink(link) { [weak self] result in
             guard let self = self else { return }
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 switch result {
                 case .success:
                     self.inboxLinks.removeAll { $0.id == link.id }
@@ -404,7 +466,8 @@ class LinkViewModel: ObservableObject {
         CloudKitManager.shared.updateSharedLinkTags(recordID: link.id, tags: tags) { [weak self] result in
             guard let self = self else { return }
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 switch result {
                 case .success:
                     // Update tags in all lists that might contain this link
