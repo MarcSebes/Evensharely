@@ -108,6 +108,18 @@ final class UserProfileViewModel: ObservableObject {
                         // 2. write full profiles to App-Group cache
                         ProfileCacheOld.save(profiles)
                        
+                        // Also update the modern lightweight cache for fast name lookups
+                        let newCachedUsers: [CachedUser] = profiles.map { CachedUser(id: $0.appleUserID, fullName: $0.fullName) }
+                        var existingCached = ProfileCache.load()
+                        for user in newCachedUsers {
+                            if let idx = existingCached.firstIndex(where: { $0.id == user.id }) {
+                                existingCached[idx] = user
+                            } else {
+                                existingCached.append(user)
+                            }
+                        }
+                        ProfileCache.save(existingCached)
+                        
                     case .failure(let error):
                         print("❌ Failed fetching friends: \(error)")
                     }
@@ -498,3 +510,4 @@ struct RecordCard: View {
     // Return the view with the explicit previewID
     return UserProfileView(appleUserID: previewID)
 }
+

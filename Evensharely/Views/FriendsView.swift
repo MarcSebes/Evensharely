@@ -4,6 +4,8 @@
 //
 //  Created by Marc Sebes on 5/14/25.
 //
+// Profile > Manage Friends
+
 
 import SwiftUI
 

@@ -16,13 +16,14 @@ struct InboxFavoritesView: View {
         NavigationStack {
             ZStack {
                 // Links List
-                if preferences.useCondensedInbox {
+//                if preferences.useCondensedInbox {
                     List {
                         ForEach(viewModel.favoriteLinks) { link in
                             SharedLinkCardCondensed(
                                 link: link,
                                 icloudID: viewModel.userID,
                                 reactions: viewModel.reactionsByLink[link.id] ?? [],
+                                replies: viewModel.repliesByLink[link.id] ?? [],
                                 isRead: ReadLinkTracker.isLinkRead(linkID: link.id.recordName, userID: viewModel.userID),
                                 isFavorited: true, // Always true in this view
                                 showReadDot: false,
@@ -55,46 +56,48 @@ struct InboxFavoritesView: View {
                         }
                     }
                     .listStyle(.plain)
-                } else {
-                    List {
-                        ForEach(viewModel.favoriteLinks) { link in
-                            SharedLinkCard(
-                                link: link,
-                                icloudID: viewModel.userID,
-                                reactions: viewModel.reactionsByLink[link.id] ?? [],
-                                isRead: ReadLinkTracker.isLinkRead(linkID: link.id.recordName, userID: viewModel.userID),
-                                isFavorited: true, // Always true in this view
-                                showReadDot: false,
-                                showSender: true,
-                                onOpen: { viewModel.openLink(link) },
-                                onFavoriteToggle: { viewModel.toggleFavorite(for: link) },
-                                onReact: { emoji in viewModel.addReaction(to: link, emoji: emoji) }
-                            )
-                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                                Button(role: .destructive) {
-                                    viewModel.deleteLink(link)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                                
-                                Button {
-                                    tagEditingLink = link
-                                } label: {
-                                    Label("Tags", systemImage: "tag")
-                                }
-                                .tint(.blue)
-                            }
-                            .listRowInsets(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
-                        }
-                        
-                        if viewModel.isLoadingFavorites {
-                            ProgressView()
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .listRowSeparator(.hidden)
-                        }
-                    }
-                    .listStyle(.plain)
-                }
+//                } else {
+//                    List {
+//                        ForEach(viewModel.favoriteLinks) { link in
+//                            SharedLinkCard(
+//                                link: link,
+//                                icloudID: viewModel.userID,
+//                                reactions: viewModel.reactionsByLink[link.id] ?? [],
+//                                replies: viewModel.repliesByLink[link.id] ?? [],
+//                                isRead: ReadLinkTracker.isLinkRead(linkID: link.id.recordName, userID: viewModel.userID),
+//                                isFavorited: true,
+//                                showReadDot: false,
+//                                showSender: true,
+//                                useRichPreview: false,   // ⬅️ keep lists lightweight
+//                                onOpen: { viewModel.openLink(link) },
+//                                onFavoriteToggle: { viewModel.toggleFavorite(for: link) },
+//                                onReact: { emoji in viewModel.addReaction(to: link, emoji: emoji) }
+//                            )
+//                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+//                                Button(role: .destructive) {
+//                                    viewModel.deleteLink(link)
+//                                } label: {
+//                                    Label("Delete", systemImage: "trash")
+//                                }
+//                                
+//                                Button {
+//                                    tagEditingLink = link
+//                                } label: {
+//                                    Label("Tags", systemImage: "tag")
+//                                }
+//                                .tint(.blue)
+//                            }
+//                            .listRowInsets(.init(top: 8, leading: 0, bottom: 8, trailing: 0))
+//                        }
+//                        
+//                        if viewModel.isLoadingFavorites {
+//                            ProgressView()
+//                                .frame(maxWidth: .infinity, alignment: .center)
+//                                .listRowSeparator(.hidden)
+//                        }
+//                    }
+//                    .listStyle(.plain)
+//                }
                 
                 // Empty state
                 if viewModel.favoriteLinks.isEmpty && !viewModel.isLoadingFavorites {
@@ -126,3 +129,4 @@ struct InboxFavoritesView: View {
         tagEditingLink: .constant(nil)
     )
 }
+

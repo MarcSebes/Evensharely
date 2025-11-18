@@ -24,6 +24,7 @@ struct ShareExtensionView: View {
     let sharedURL: URL
     var onComplete: () -> Void
     @State private var tagInput: String = ""
+    @State private var selectedFilterTag: filterTag = .social
     @State private var linkMetadata: LPLinkMetadata?
 
     // MARK: - App Group UserDefaults
@@ -77,10 +78,13 @@ struct ShareExtensionView: View {
             return
         }
 
-        let tags = tagInput
+        var tags = tagInput
             .split(separator: ",")
             .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty }
+        
+        tags.append(selectedFilterTag.rawValue)
+            
 
         let recipients = allUsers
             .filter { selectedRecipients.contains($0.id) }
@@ -128,8 +132,15 @@ struct ShareExtensionView: View {
                     // Tags Input
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Tags").font(.headline)
-                        TextField("e.g. funny, food, inspo", text: $tagInput)
-                            .textFieldStyle(.roundedBorder)
+//                        TextField("e.g. funny, food, inspo", text: $tagInput)
+//                            .textFieldStyle(.roundedBorder)
+                        Picker("Link Type", selection: $selectedFilterTag) {
+                                               ForEach(filterTag.allCases) { filterTag in
+                                                   Text(filterTag.rawValue.capitalized)
+                                                       .tag(filterTag)
+                                               }
+                                           }.pickerStyle(.segmented)
+                        
                     }
 
                     // Recipients List

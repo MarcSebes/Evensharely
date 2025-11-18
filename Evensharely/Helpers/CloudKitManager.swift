@@ -1197,4 +1197,43 @@ class CloudKitManager {
         // Delete the reaction record
         try await publicDB.deleteRecord(withID: recordIDToDelete)
     }
+
+    // MARK: - Replies
+    func fetchReplies(
+        for linkID: CKRecord.ID,
+        completion: @escaping (Result<[Reply], Error>) -> Void
+    ) {
+        Task {
+            do {
+                let replies = try await errorHandler.performWithRetry(
+                    operation: { [weak self] in
+                        guard let self = self else { throw CloudKitError.invalidData("Manager deallocated") }
+                        return try await self.fetchRepliesAsync(for: linkID)
+                    }
+                )
+                DispatchQueue.main.async {
+                    completion(.success(replies))
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
+    }
+
+    private func fetchRepliesAsync(for linkID: CKRecord.ID) async throws -> [Reply] {
+        let predicate = NSPredicate(format: "linkID == %@", linkID.recordName)
+        let query = CKQuery(recordType: "Reply", predicate: predicate)
+        query.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+        
+        let (matchResults, _) = try await publicDB.records(matching: query, resultsLimit: 50)
+        
+        let replies: [Reply] = matchResults.compactMap { _, result in
+            guard let record = try? result.get() else { return nil }
+            return Reply(record: record)
+        }
+        
+        return replies
+    }
 }

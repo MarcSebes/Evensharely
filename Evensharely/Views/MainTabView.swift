@@ -40,14 +40,24 @@ struct MainTabView: View {
                 Label("Sent", systemImage: "paperplane")
             }
             
-            // Favorites Tab
-            InboxFavoritesView(
+            // Recipes Tab
+            InboxRecipeView(
                 viewModel: viewModel,
                 tagEditingLink: $tagEditingLink
             )
             .tabItem {
-                Label("Favorites", systemImage: "star")
+                Label("Recipes", systemImage: "fork.knife")
             }
+            
+            
+//            // Favorites Tab
+//            InboxFavoritesView(
+//                viewModel: viewModel,
+//                tagEditingLink: $tagEditingLink
+//            )
+//            .tabItem {
+//                Label("Favorites", systemImage: "star")
+//            }
             // UserProfile Tab
             UserProfileView()
             .tabItem {

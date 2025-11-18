@@ -9,10 +9,18 @@
 import SwiftUI
 import CloudKit
 
+private func replyAuthorDisplay(from userID: String) -> String {
+    let trimmed = userID.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return "Someone" }
+    let suffix = String(trimmed.suffix(6))
+    return "User \(suffix)"
+}
+
 struct SharedLinkCardCondensed: View {
     let link: SharedLink
     let icloudID: String
     let reactions: [Reaction]
+    let replies: [Reply]
     let isRead: Bool?
     let isFavorited: Bool
     let showReadDot: Bool
@@ -25,6 +33,7 @@ struct SharedLinkCardCondensed: View {
         link: SharedLink,
         icloudID: String,
         reactions: [Reaction],
+        replies: [Reply],
         isRead: Bool? = nil,
         isFavorited: Bool = false,
         showReadDot: Bool = false,
@@ -37,6 +46,7 @@ struct SharedLinkCardCondensed: View {
         self.link = link
         self.icloudID = icloudID
         self.reactions = reactions
+        self.replies = replies
         self.isRead = isRead
         self.isFavorited = isFavorited
         self.showReadDot = showReadDot
@@ -50,40 +60,20 @@ struct SharedLinkCardCondensed: View {
     @State private var previewHeight: CGFloat = 200 // default fallback height
     private var debugOn: Bool = false
     
+    @StateObject private var nameResolver = NameResolver.shared
+    
     var body: some View {
         VStack {
             VStack(alignment: .leading, spacing: 4) {  //need more horizontal whitespace outside this VStack
                 
-                // --------------------//
-                //Display Header
-                // --------------------//
-                
-                VStack {
-                    HStack(alignment: .center, spacing: 10) {
-                        Text(formattedDate(link.date))
+  
+                SharedLinkInboxRow(
+                    link: link,
+                    isRead: isRead,
+                    showReadDot: showReadDot,
+                    onOpen: onOpen
+                )
 
-                        Spacer()
-                        Text(link.senderFullName)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                       Spacer()
-                        if showReadDot, let isRead, !isRead {
-                            Circle()
-                                .fill(Color.red)
-                                .frame(width: 8, height: 8)
-                        }
-
-                    }
-                    .font(.caption2)
-                    .foregroundColor(.gray)
-                }
-                //End Display Header
-                
-                Button(action: onOpen) {
-                    ZStack(alignment: .topTrailing) {
-                        LinkItemView(link: link.url.absoluteString)
 
 
                         // --------------------//
@@ -104,9 +94,7 @@ struct SharedLinkCardCondensed: View {
 //                            }
 //                            .buttonStyle(PlainButtonStyle())
 //                        }
-                    }
-                }
-                .buttonStyle(PlainButtonStyle())
+
                 //End Favorite Star Overlay
  
                 // --------------------//
@@ -131,6 +119,38 @@ struct SharedLinkCardCondensed: View {
                 
                 
                 
+                // --------------------//
+                // Replies Block
+                // --------------------//
+                if !replies.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        let topReplies = Array(replies.prefix(2))
+                        ForEach(topReplies, id: \ .id) { reply in
+                            HStack(alignment: .top, spacing: 6) {
+                                Image(systemName: "bubble.left")
+                                    .foregroundColor(.secondary)
+                                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                    let _ = nameResolver.resolveIfNeeded(userID: reply.userID)
+                                    let author = nameResolver.displayName(for: reply.userID) ?? replyAuthorDisplay(from: reply.userID)
+                                    Text(author + ":")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                    Text(reply.text)
+                                        .font(.caption)
+                                        .lineLimit(2)
+                                }
+                            }
+                        }
+                        HStack(spacing: 12) {
+                            Button("View all") { /* hook later */ }
+                                .font(.caption2)
+                            Button("Reply") { /* hook later */ }
+                                .font(.caption2)
+                        }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 2)
+                }
                 
                 // --------------------//
                 //Display Tags
@@ -146,24 +166,24 @@ struct SharedLinkCardCondensed: View {
                     .padding(.horizontal)
                     
                 }
-                HStack {
-                    ForEach(["👍", "❤️", "😂", "😮"], id: \.self) { emoji in
-                        let count = reactions.filter { $0.reactionType == emoji }.count
-                        let userSelected = reactions.contains { $0.reactionType == emoji && $0.userID == icloudID }
-                        
-                        Button(action: {
-                            onReact?(emoji)
-                        }) {
-                            Text("\(emoji) \(count)")
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(userSelected ? Color.blue.opacity(0.2) : Color.clear)
-                                .cornerRadius(8)
-                        }
-                    }
-                } //End reaction Block
-                .font(.caption)
-                .padding()
+//                HStack {
+//                    ForEach(["👍", "❤️", "😂", "😮"], id: \.self) { emoji in
+//                        let count = reactions.filter { $0.reactionType == emoji }.count
+//                        let userSelected = reactions.contains { $0.reactionType == emoji && $0.userID == icloudID }
+//                        
+//                        Button(action: {
+//                            onReact?(emoji)
+//                        }) {
+//                            Text("\(emoji) \(count)")
+//                                .padding(.horizontal, 8)
+//                                .padding(.vertical, 4)
+//                                .background(userSelected ? Color.blue.opacity(0.2) : Color.clear)
+//                                .cornerRadius(8)
+//                        }
+//                    }
+//                } //End reaction Block
+//                .font(.caption)
+//                .padding()
 
             }
             .padding(.horizontal)
@@ -193,6 +213,7 @@ struct SharedLinkCardCondensed: View {
                 reactions: [
                     Reaction(id: CKRecord.ID(recordName: "reaction-2"), linkID: linkID, userID: "_e625da7a3ca0e60d88415fa21c57927c", reactionType: "❤️", timestamp: Date())
                 ],
+                replies: [],
                 isRead: false,
                 isFavorited: true,
                 showReadDot: true,
@@ -212,5 +233,3 @@ struct SharedLinkCardCondensed: View {
     }
 
     
-
-

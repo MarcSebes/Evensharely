@@ -59,6 +59,8 @@
 		12A253CE2DA842B3009F70CA /* Exceptions for "Evensharely" folder in "Evensharely" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				DevOnly/ScalableLinkPreview.swift,
+				DevOnly/TestShareView.swift,
 				Info.plist,
 			);
 			target = 1279CC7C2DA1CEC500184701 /* Evensharely */;
@@ -83,7 +85,10 @@
 				Helpers/CloudKitManager.swift,
 				Helpers/FriendInvitationManager.swift,
 				Helpers/Functions.swift,
+				Helpers/LinkMetaDataLoader.swift,
+				Helpers/LPMetadataCache.swift,
 				Helpers/MetadataCache.swift,
+				Helpers/MetadataLoader.swift,
 				Helpers/ProfileCacheOld.swift,
 				Helpers/ProfileDebugView.swift,
 				Helpers/ReactionManager.swift,
@@ -99,8 +104,10 @@
 				Models/SharedLink.swift,
 				Models/UserProfile.swift,
 				Views/LinkItemView.swift,
-				Views/ScalableLinkPreview.swift,
+				Views/NameResolver.swift,
+				Views/Reply.swift,
 				Views/SharedLinkCardCondensed.swift,
+				Views/SharedLinkInboxRow.swift,
 			);
 			target = 12EE1BA82DA42C25006569D3 /* MyShareTarget */;
 		};

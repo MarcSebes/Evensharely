@@ -16,6 +16,7 @@ class LinkViewModel: ObservableObject {
     @Published var favoriteLinks: [SharedLink] = []
     @Published var favoriteLinkIDs: Set<CKRecord.ID> = []
     @Published var reactionsByLink: [CKRecord.ID: [Reaction]] = [:]
+    @Published var repliesByLink: [CKRecord.ID: [Reply]] = [:]
     
     @Published var isLoadingInbox = false
     @Published var isLoadingSent = false
@@ -361,6 +362,7 @@ class LinkViewModel: ObservableObject {
         
         // Load reactions for new links
         loadReactionsForLinks(newLinks)
+        loadRepliesForLinks(newLinks)
         
         finishInboxLoading(success: true, error: nil)
     }
@@ -612,6 +614,29 @@ class LinkViewModel: ObservableObject {
         }
     }
     
+    func loadReplies(for link: SharedLink) async {
+        do {
+            let replies = try await withCheckedThrowingContinuation { continuation in
+                CloudKitManager.shared.fetchReplies(for: link.id) { result in
+                    switch result {
+                    case .success(let replies):
+                        continuation.resume(returning: replies)
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+            await MainActor.run { [weak self] in
+                self?.repliesByLink[link.id] = replies
+            }
+        } catch {
+            print("⚠️ Failed to fetch replies: \(error)")
+            await MainActor.run { [weak self] in
+                self?.lastError = error
+            }
+        }
+    }
+    
     private func loadReactionsForLinks(_ links: [SharedLink]) {
         Task { @MainActor [weak self] in
             guard let self = self else { return }
@@ -622,6 +647,15 @@ class LinkViewModel: ObservableObject {
             
             for (key, value) in reactionMap {
                 self.reactionsByLink[key] = value
+            }
+        }
+    }
+    
+    private func loadRepliesForLinks(_ links: [SharedLink]) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            for link in links {
+                await self.loadReplies(for: link)
             }
         }
     }
@@ -673,6 +707,36 @@ class LinkViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Inline Replies
+    /// Sends a lightweight inline reply associated with a SharedLink.
+    /// This creates/updates a CloudKit `Reply` record and then performs any optional local updates.
+    func sendInlineReply(_ text: String, to link: SharedLink) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        // Create a Reply record in CloudKit. We keep this simple and resilient.
+        let replyRecord = CKRecord(recordType: "Reply", recordID: CKRecord.ID(recordName: UUID().uuidString))
+        replyRecord["linkID"] = link.id.recordName as CKRecordValue
+        replyRecord["userID"] = userID as CKRecordValue
+        replyRecord["text"] = trimmed as CKRecordValue
+        replyRecord["timestamp"] = Date() as CKRecordValue
+
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            do {
+                _ = try await CloudKitConfig.container.publicCloudDatabase.save(replyRecord)
+                // Optionally, mark link as read when replying
+                ReadLinkTracker.markAsRead(linkID: link.id.recordName, userID: self.userID)
+                BadgeManager.updateBadgeCount(for: self.inboxLinks, userID: self.userID)
+                await self.loadReplies(for: link)
+            } catch {
+                // Surface the error to the UI
+                self.lastError = error
+                print("❌ Failed to send inline reply: \(error)")
+            }
+        }
+    }
+    
     // MARK: - Public Pagination Status
     
     var paginationStatus: String {
@@ -689,5 +753,4 @@ class LinkViewModel: ObservableObject {
         return !isLoadingInbox && !allInboxLinksLoaded
     }
 }
-
 

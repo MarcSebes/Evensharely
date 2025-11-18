@@ -16,3 +16,9 @@ enum CloudKitConfig {
 }
 
 let previewID = "000866.c7c9a90c75834932b91822b2739c37ce.2033"
+
+enum filterTag: String, CaseIterable, Identifiable {
+       case recipe, social
+
+       var id: String { self.rawValue }
+   }
