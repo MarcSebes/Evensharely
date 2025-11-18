@@ -27,6 +27,16 @@ private enum LinkPlatform {
 private struct FormattedLinkText {
     let subject: String
     let snippet: String
+    let displayHost: String
+}
+
+private func cleanedHost(from url: URL) -> String {
+    guard let host = url.host?.lowercased() else { return "" }
+
+    if host.hasPrefix("www.") {
+        return String(host.dropFirst(4))
+    }
+    return host
 }
 
 private func platform(for url: URL) -> LinkPlatform {
@@ -101,17 +111,18 @@ private func formatTikTok(url: URL, title: String?) -> FormattedLinkText {
         subject = "TikTok video"
     }
 
-    // Not scraping; keep snippet empty for now
-    return FormattedLinkText(subject: subject, snippet: "")
+    return FormattedLinkText(
+        subject: subject,
+        snippet: "",
+        displayHost: "TikTok"
+    )
 }
 
-// MARK: YouTube Specific Formatting
 // MARK: YouTube Specific Formatting
 private func formatYouTube(url: URL, title: String?, author: String?) -> FormattedLinkText {
     let rawTitle = (title ?? url.lastPathComponent)
         .trimmingCharacters(in: .whitespacesAndNewlines)
 
-    // Common pattern: "Video Title - YouTube"
     let cleanedTitle: String
     if let range = rawTitle.range(of: " - YouTube", options: [.caseInsensitive, .backwards]) {
         cleanedTitle = String(rawTitle[..<range.lowerBound])
@@ -119,15 +130,17 @@ private func formatYouTube(url: URL, title: String?, author: String?) -> Formatt
         cleanedTitle = rawTitle
     }
 
-    // Your desired behavior:
-    // Subject  = Author (channel) if available, otherwise cleaned title
-    // Snippet  = cleaned title
-    let subject = author?.trimmingCharacters(in: .whitespacesAndNewlines)
-        .filter { !$0.isNewline }
-        .isEmpty == false ? author! : cleanedTitle
+    let subject = (author?.trimmingCharacters(in: .whitespacesAndNewlines)).flatMap {
+        $0.isEmpty ? nil : $0
+    } ?? cleanedTitle
 
-    return FormattedLinkText(subject: subject, snippet: cleanedTitle)
+    return FormattedLinkText(
+        subject: subject,
+        snippet: cleanedTitle,
+        displayHost: "YouTube"
+    )
 }
+
 
 
 // MARK: Other Formatting
@@ -135,12 +148,21 @@ private func formatOther(url: URL, title: String?) -> FormattedLinkText {
     let fallback = url.absoluteString
     let resolvedTitle = title ?? fallback
 
-    // Preserve existing behavior: subject & snippet are both the title
-    return FormattedLinkText(subject: resolvedTitle, snippet: resolvedTitle)
+    return FormattedLinkText(
+        subject: resolvedTitle,
+        snippet: resolvedTitle,
+        displayHost: cleanedHost(from: url)   // "domain.com", no "www."
+    )
 }
 
+
 // MARK: Master Formatter
-private func formatLinkText(for url: URL, title: String?, cachedAuthor: String?, youtubeAuthor: String? ) -> FormattedLinkText {
+private func formatLinkText(
+    for url: URL,
+    title: String?,
+    cachedAuthor: String?,
+    youtubeAuthor: String?
+) -> FormattedLinkText {
     let platformType = platform(for: url)
     let rawTitle = title ?? url.absoluteString
 
@@ -148,20 +170,24 @@ private func formatLinkText(for url: URL, title: String?, cachedAuthor: String?,
     case .instagram:
         let subject = instagramSubject(from: rawTitle)
         let snippet = instagramSnippet(from: rawTitle)
-        return FormattedLinkText(subject: subject, snippet: snippet)
+        return FormattedLinkText(
+            subject: subject,
+            snippet: snippet,
+            displayHost: "Instagram"
+        )
 
     case .tiktok:
         return formatTikTok(url: url, title: title)
 
     case .youtube:
-            // Prefer cached author, then loader’s, then nil
-            let effectiveAuthor = cachedAuthor ?? youtubeAuthor
-            return formatYouTube(url: url, title: title, author: effectiveAuthor)
+        let effectiveAuthor = cachedAuthor ?? youtubeAuthor
+        return formatYouTube(url: url, title: title, author: effectiveAuthor)
 
     case .other:
         return formatOther(url: url, title: title)
     }
 }
+
 
 
 
@@ -234,12 +260,12 @@ struct SharedLinkInboxRow: View {
                         }
                     }
 
-                    // “Subject” = platform-aware subject
+                    // “Subject” = Title
                     Text(formattedText.subject)
                         .font((isRead ?? true) ? .body : .body.weight(.semibold))
                         .lineLimit(1)
 
-                    // “Snippet” = platform-aware snippet
+                    // “Snippet” = Descripion
                     if !formattedText.snippet.isEmpty {
                         Text(formattedText.snippet)
                             .font(.caption)
@@ -248,12 +274,11 @@ struct SharedLinkInboxRow: View {
                     }
                     
                     
-                    // “Snippet” = host (or tags if you prefer)
-                    Text(loader.metadata?.url?.host ?? link.url.host() ?? "")
+                    // Host (e.g. Instagram)
+                    Text(formattedText.displayHost)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    
                     
                 }
             }
