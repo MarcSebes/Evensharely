@@ -10,6 +10,7 @@ struct SharedLink: Identifiable {
     var recipientIcloudIDs: [String]
     var tags: [String]
     var date: Date
+    var author: String?
 
     init(
         id: CKRecord.ID,
@@ -18,7 +19,8 @@ struct SharedLink: Identifiable {
         senderFullName: String,
         recipientIcloudIDs: [String],
         tags: [String],
-        date: Date
+        date: Date,
+        author: String? = nil
     ) {
         self.id = id
         self.url = url
@@ -27,6 +29,7 @@ struct SharedLink: Identifiable {
         self.recipientIcloudIDs = recipientIcloudIDs
         self.tags = tags
         self.date = date
+        self.author = author
     }
 
     init(record: CKRecord) {
@@ -37,6 +40,7 @@ struct SharedLink: Identifiable {
         self.recipientIcloudIDs = record["recipientIcloudIDs"] as? [String] ?? []
         self.tags = record["tags"] as? [String] ?? []
         self.date = record["date"] as? Date ?? Date()
+        self.author = record["author"] as? String
     }
 
     func toRecord() -> CKRecord {
@@ -47,8 +51,12 @@ struct SharedLink: Identifiable {
         record["recipientIcloudIDs"] = recipientIcloudIDs
         record["tags"] = tags
         record["date"] = date
+        if let author {                    
+            record["author"] = author
+        }
         return record
     }
+
     
 }
 

@@ -1,10 +1,8 @@
-// LinkMetadataLoader.swift  (replace the contents with this)
+// LinkMetadataLoader.swift
 
 import SwiftUI
 import LinkPresentation
 import UniformTypeIdentifiers
-
-// LinkMetadataLoader.swift  — replace just the load(...) body with this version
 
 @MainActor
 final class LinkMetadataLoader: ObservableObject {
@@ -12,85 +10,166 @@ final class LinkMetadataLoader: ObservableObject {
     @Published var image: Image?
     @Published var isLoading = false
 
+    /// Transient YouTube author/channel name (can be cached into SharedLink.author)
     @Published var youtubeAuthor: String?
-    
-    func load(for url: URL) async {
+
+    private let provider = LPMetadataProvider()
+
+    /// Load metadata + thumbnail image for a URL.
+    /// - Parameter existingAuthor: cached author (e.g. from SharedLink.author). If present,
+    ///   we skip the YouTube oEmbed author fetch and just mirror this into `youtubeAuthor`.
+    func load(for url: URL, existingAuthor: String? = nil) async {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
 
+        // Reset to avoid showing stale state from another URL
+        self.metadata = nil
+        self.image = nil
+        self.youtubeAuthor = nil
+
         do {
-            // 1) Use the shared, throttled cache (limits global LP concurrency).
-            let meta = try await LPMetadataCache.shared.metadata(for: url) // ⬅️ throttled/cached
+            let meta = try await fetchMetadata(for: url)
             self.metadata = meta
 
-            // 2) Try to pull a preview image if provided.
-            if let preview = await loadImage(from: meta.imageProvider) {
-                self.image = preview
-            }
+            // Load thumbnail/icon
+            self.image = await loadFirstImage(from: meta)
+
+            // Handle YouTube author logic
             if isYouTube(url: url) {
-                youtubeAuthor = await fetchYouTubeAuthor(for: url)
-            } else {
-                youtubeAuthor = nil
+                if let existingAuthor, !existingAuthor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    // We already have an author cached in SharedLink; keep loader in sync
+                    self.youtubeAuthor = existingAuthor
+                } else {
+                    // Fetch via oEmbed
+                    self.youtubeAuthor = await fetchYouTubeAuthor(for: url)
+                }
             }
-            
         } catch {
-            // Keep placeholder on failure.
+            // You may want to add debug logging here
+            // print("LinkMetadataLoader error for \(url): \(error)")
         }
     }
+}
 
-    private func loadImage(from provider: NSItemProvider?) async -> Image? {
-        let imageType = UTType.image.identifier
-        guard let provider, provider.hasItemConformingToTypeIdentifier(imageType) else { return nil }
+// MARK: - LPMetadata fetch
+
+@MainActor
+private extension LinkMetadataLoader {
+    func fetchMetadata(for url: URL) async throws -> LPLinkMetadata {
+        try await withCheckedThrowingContinuation { continuation in
+            provider.startFetchingMetadata(for: url) { metadata, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else if let metadata {
+                    continuation.resume(returning: metadata)
+                } else {
+                    continuation.resume(
+                        throwing: NSError(
+                            domain: "LinkMetadataLoader",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "No metadata and no error returned"]
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Image loading helpers
+
+@MainActor
+private extension LinkMetadataLoader {
+    func loadFirstImage(from metadata: LPLinkMetadata) async -> Image? {
+        // Prefer the main image, fall back to icon
+        if let main = await image(from: metadata.imageProvider) {
+            return main
+        }
+        if let icon = await image(from: metadata.iconProvider) {
+            return icon
+        }
+        return nil
+    }
+
+    func image(from provider: NSItemProvider?) async -> Image? {
+        guard let provider else { return nil }
+
+        // Easiest path: load UIImage directly if possible
+        if provider.canLoadObject(ofClass: UIImage.self) {
+            return await withCheckedContinuation { continuation in
+                provider.loadObject(ofClass: UIImage.self) { item, _ in
+                    guard let uiImage = item as? UIImage else {
+                        continuation.resume(returning: nil)
+                        return
+                    }
+                    continuation.resume(returning: Image(uiImage: uiImage))
+                }
+            }
+        }
+
+        // Fallback: load raw data / file URL for an image type
+        let typeIdentifier = UTType.image.identifier
 
         return await withCheckedContinuation { continuation in
-            provider.loadItem(forTypeIdentifier: imageType, options: nil) { item, _ in
+            guard provider.hasItemConformingToTypeIdentifier(typeIdentifier) else {
+                continuation.resume(returning: nil)
+                return
+            }
+
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
                 var result: Image? = nil
+
                 if let ui = item as? UIImage {
                     result = Image(uiImage: ui)
-                } else if let data = item as? Data, let ui = UIImage(data: data) {
+                } else if let data = item as? Data,
+                          let ui = UIImage(data: data) {
                     result = Image(uiImage: ui)
                 } else if let url = item as? URL,
                           let data = try? Data(contentsOf: url),
                           let ui = UIImage(data: data) {
                     result = Image(uiImage: ui)
                 }
+
                 continuation.resume(returning: result)
             }
         }
     }
 }
 
-private func isYouTube(url: URL) -> Bool {
-    guard let host = url.host?.lowercased() else { return false }
-    return host.contains("youtube.com") || host.contains("youtu.be")
-}
+// MARK: - YouTube author via oEmbed
 
 private struct YouTubeOEmbedResponse: Decodable {
     let author_name: String?
-    let title: String?
 }
 
-private func fetchYouTubeAuthor(for url: URL) async -> String? {
-    var components = URLComponents(string: "https://www.youtube.com/oembed")!
-    components.queryItems = [
-        URLQueryItem(name: "url", value: url.absoluteString),
-        URLQueryItem(name: "format", value: "json")
-    ]
+@MainActor
+private extension LinkMetadataLoader {
+    func isYouTube(url: URL) -> Bool {
+        guard let host = url.host?.lowercased() else { return false }
+        return host.contains("youtube.com") || host.contains("youtu.be")
+    }
 
-    guard let requestURL = components.url else { return nil }
+    func fetchYouTubeAuthor(for url: URL) async -> String? {
+        var components = URLComponents(string: "https://www.youtube.com/oembed")!
+        components.queryItems = [
+            URLQueryItem(name: "url", value: url.absoluteString),
+            URLQueryItem(name: "format", value: "json")
+        ]
 
-    do {
-        let (data, response) = try await URLSession.shared.data(from: requestURL)
-        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+        guard let requestURL = components.url else { return nil }
+
+        do {
+            let (data, response) = try await URLSession.shared.data(from: requestURL)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+                return nil
+            }
+
+            let decoded = try JSONDecoder().decode(YouTubeOEmbedResponse.self, from: data)
+            return decoded.author_name
+        } catch {
+            // print("YouTube oEmbed error: \(error)")
             return nil
         }
-
-        let decoded = try JSONDecoder().decode(YouTubeOEmbedResponse.self, from: data)
-        return decoded.author_name
-    } catch {
-        // You might want a debug print here, but silently fail is fine for UI
-        return nil
     }
 }
-

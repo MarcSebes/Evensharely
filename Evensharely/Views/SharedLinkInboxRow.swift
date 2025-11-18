@@ -140,7 +140,7 @@ private func formatOther(url: URL, title: String?) -> FormattedLinkText {
 }
 
 // MARK: Master Formatter
-private func formatLinkText(for url: URL, title: String?, youtubeAuthor: String?) -> FormattedLinkText {
+private func formatLinkText(for url: URL, title: String?, cachedAuthor: String?, youtubeAuthor: String? ) -> FormattedLinkText {
     let platformType = platform(for: url)
     let rawTitle = title ?? url.absoluteString
 
@@ -154,7 +154,9 @@ private func formatLinkText(for url: URL, title: String?, youtubeAuthor: String?
         return formatTikTok(url: url, title: title)
 
     case .youtube:
-        return formatYouTube(url: url, title: title, author: youtubeAuthor)
+            // Prefer cached author, then loader’s, then nil
+            let effectiveAuthor = cachedAuthor ?? youtubeAuthor
+            return formatYouTube(url: url, title: title, author: effectiveAuthor)
 
     case .other:
         return formatOther(url: url, title: title)
@@ -178,9 +180,11 @@ struct SharedLinkInboxRow: View {
         formatLinkText(
             for: link.url,
             title: loader.metadata?.title,
-            youtubeAuthor: loader.youtubeAuthor
+            cachedAuthor: link.author,               // NEW: from CloudKit
+            youtubeAuthor: loader.youtubeAuthor      // NEW: from loader
         )
     }
+
 
 
     var body: some View {
@@ -261,8 +265,8 @@ struct SharedLinkInboxRow: View {
             // Debounced load kicked off per row appearance
             loadTask?.cancel()
             loadTask = Task { @MainActor in
-                try? await Task.sleep(for: .milliseconds(120)) // ⬅️ light debounce
-                await loader.load(for: link.url)
+                try? await Task.sleep(for: .milliseconds(120))
+                await loader.load(for: link.url, existingAuthor: link.author)
             }
         }
         .onDisappear {
