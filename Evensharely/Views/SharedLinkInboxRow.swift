@@ -198,6 +198,8 @@ struct SharedLinkInboxRow: View {
     let showReadDot: Bool
     let onOpen: () -> Void
 
+    var onAuthorResolved: ((SharedLink, String) -> Void)? = nil
+    
     @StateObject private var loader = LinkMetadataLoader()
     @State private var loadTask: Task<Void, Never>? = nil
     
@@ -298,12 +300,20 @@ struct SharedLinkInboxRow: View {
             // Cancel any in-flight load when the row disappears (fast scrolling, etc.)
             loadTask?.cancel()
         }
+        .onChange(of: loader.youtubeAuthor) { _, newAuthor in
+            guard let newAuthor = newAuthor?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !newAuthor.isEmpty else { return }
+            guard newAuthor != link.author else { return }   // avoid redundant writes
+
+            onAuthorResolved?(link, newAuthor)
+        }
+        
     }
+    
 }
 
 // Tiny helper to get host from URL without importing elsewhere
 private extension URL {
     func host() -> String? { self.host }
 }
-
 

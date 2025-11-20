@@ -754,3 +754,52 @@ class LinkViewModel: ObservableObject {
     }
 }
 
+extension LinkViewModel {
+    /// Updates the cached author/channel name for a SharedLink and persists it to CloudKit.
+    func updateAuthor(for link: SharedLink, author: String) {
+        let trimmed = author.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        // If nothing actually changed, bail out early.
+        if let idx = inboxLinks.firstIndex(where: { $0.id == link.id }),
+           inboxLinks[idx].author == trimmed {
+            return
+        }
+
+        // Helper to apply the updated author to our local arrays.
+        func applyLocalUpdate(to links: inout [SharedLink]) {
+            if let i = links.firstIndex(where: { $0.id == link.id }) {
+                links[i].author = trimmed
+            }
+        }
+
+        applyLocalUpdate(to: &inboxLinks)
+        applyLocalUpdate(to: &sentLinks)
+        applyLocalUpdate(to: &favoriteLinks)
+
+        // Update cached inbox so the author survives app restarts.
+        SharedLinkCache.save(inboxLinks)
+
+        // Persist to CloudKit.
+        let db = CloudKitConfig.container.publicCloudDatabase
+        db.fetch(withRecordID: link.id) { [weak self] record, error in
+            guard let self = self else { return }
+
+            if let record = record, error == nil {
+                record["author"] = trimmed as CKRecordValue
+
+                db.save(record) { _, saveError in
+                    if let saveError = saveError {
+                        DispatchQueue.main.async {
+                            self.lastError = saveError
+                        }
+                    }
+                }
+            } else if let error = error {
+                DispatchQueue.main.async {
+                    self.lastError = error
+                }
+            }
+        }
+    }
+}

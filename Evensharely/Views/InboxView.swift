@@ -73,7 +73,10 @@ struct InboxView: View {
                     onReact: { emoji in viewModel.addReaction(to: link, emoji: emoji) },
                     onReply: { activeReplyLinkID = link.id; inlineReplyDraft = "" },
                     onDelete: { viewModel.deleteLink(link) },
-                    onEditTags: { tagEditingLink = link }
+                    onEditTags: { tagEditingLink = link },
+                    onAuthorResolved: { resolvedLink, author in
+                        viewModel.updateAuthor(for: resolvedLink, author: author)
+                    }
                 )
                 .onAppear {
                     if link.id == viewModel.filteredInboxLinks.last?.id,
@@ -215,6 +218,7 @@ private struct InboxRowCondensed: View {
     let onReply: () -> Void
     let onDelete: () -> Void
     let onEditTags: () -> Void
+    let onAuthorResolved: ((SharedLink, String) -> Void)?
 
     var body: some View {
         SharedLinkCardCondensed(
@@ -228,7 +232,8 @@ private struct InboxRowCondensed: View {
             showSender: true,
             onOpen: onOpen,
             onFavoriteToggle: onFavoriteToggle,
-            onReact: onReact
+            onReact: onReact,
+            onAuthorResolved: onAuthorResolved
         )
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             

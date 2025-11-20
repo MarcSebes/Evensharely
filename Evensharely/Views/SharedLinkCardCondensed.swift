@@ -29,6 +29,8 @@ struct SharedLinkCardCondensed: View {
     let onOpen: () -> Void
     let onFavoriteToggle: (() -> Void)?
     let onReact: ((String) -> Void)?
+    let onAuthorResolved: ((SharedLink, String) -> Void)?
+
     init(
         link: SharedLink,
         icloudID: String,
@@ -41,7 +43,8 @@ struct SharedLinkCardCondensed: View {
         recipientText: String? = nil,
         onOpen: @escaping () -> Void,
         onFavoriteToggle: (() -> Void)? = nil,
-        onReact: ((String) -> Void)? = nil
+        onReact: ((String) -> Void)? = nil,
+        onAuthorResolved: ((SharedLink, String) -> Void)? = nil   // NEW
     ) {
         self.link = link
         self.icloudID = icloudID
@@ -55,7 +58,9 @@ struct SharedLinkCardCondensed: View {
         self.onOpen = onOpen
         self.onFavoriteToggle = onFavoriteToggle
         self.onReact = onReact
+        self.onAuthorResolved = onAuthorResolved   // NEW
     }
+
     
     @State private var previewHeight: CGFloat = 200 // default fallback height
     private var debugOn: Bool = false
@@ -71,7 +76,8 @@ struct SharedLinkCardCondensed: View {
                     link: link,
                     isRead: isRead,
                     showReadDot: showReadDot,
-                    onOpen: onOpen
+                    onOpen: onOpen,
+                    onAuthorResolved: onAuthorResolved
                 )
 
 

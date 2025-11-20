@@ -9,11 +9,12 @@ final class LinkMetadataLoader: ObservableObject {
     @Published var metadata: LPLinkMetadata?
     @Published var image: Image?
     @Published var isLoading = false
-
-    /// Transient YouTube author/channel name (can be cached into SharedLink.author)
     @Published var youtubeAuthor: String?
 
-    private let provider = LPMetadataProvider()
+    
+
+    // NEW: per-app-session memory cache
+    private static var youtubeAuthorCache: [URL: String] = [:]
 
     /// Load metadata + thumbnail image for a URL.
     /// - Parameter existingAuthor: cached author (e.g. from SharedLink.author). If present,
@@ -23,10 +24,13 @@ final class LinkMetadataLoader: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
-        // Reset to avoid showing stale state from another URL
         self.metadata = nil
         self.image = nil
-        self.youtubeAuthor = nil
+
+        // Only clear youtubeAuthor if we *know* this URL isn't YouTube
+        if !isYouTube(url: url) {
+            self.youtubeAuthor = nil
+        }
 
         do {
             let meta = try await fetchMetadata(for: url)
@@ -37,17 +41,27 @@ final class LinkMetadataLoader: ObservableObject {
 
             // Handle YouTube author logic
             if isYouTube(url: url) {
-                if let existingAuthor, !existingAuthor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    // We already have an author cached in SharedLink; keep loader in sync
+                if let existingAuthor,
+                   !existingAuthor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    // We already have a cached author in SharedLink
                     self.youtubeAuthor = existingAuthor
+
+                } else if let cached = LinkMetadataLoader.youtubeAuthorCache[url] {
+                    // We've already fetched this author in this app session
+                    self.youtubeAuthor = cached
+
                 } else {
-                    // Fetch via oEmbed
-                    self.youtubeAuthor = await fetchYouTubeAuthor(for: url)
+                    // Fetch via oEmbed once, then cache in memory
+                    if let fetched = await fetchYouTubeAuthor(for: url) {
+                        self.youtubeAuthor = fetched
+                        LinkMetadataLoader.youtubeAuthorCache[url] = fetched
+                    } else {
+                        self.youtubeAuthor = nil
+                    }
                 }
             }
         } catch {
-            // You may want to add debug logging here
-            // print("LinkMetadataLoader error for \(url): \(error)")
+            print("LinkMetadataLoader error for \(url): \(error)")
         }
     }
 }
@@ -57,7 +71,10 @@ final class LinkMetadataLoader: ObservableObject {
 @MainActor
 private extension LinkMetadataLoader {
     func fetchMetadata(for url: URL) async throws -> LPLinkMetadata {
-        try await withCheckedThrowingContinuation { continuation in
+        // LPMetadataProvider is a one-shot object: create a fresh one per fetch.
+        let provider = LPMetadataProvider()
+
+        return try await withCheckedThrowingContinuation { continuation in
             provider.startFetchingMetadata(for: url) { metadata, error in
                 if let error {
                     continuation.resume(throwing: error)
