@@ -1,5 +1,3 @@
-// LinkMetadataLoader.swift
-
 import SwiftUI
 import LinkPresentation
 import UniformTypeIdentifiers
@@ -11,9 +9,9 @@ final class LinkMetadataLoader: ObservableObject {
     @Published var isLoading = false
     @Published var youtubeAuthor: String?
 
-    
-
-    // NEW: per-app-session memory cache
+    // Per-app-session caches
+    private static var metadataCache: [URL: LPLinkMetadata] = [:]
+    private static var imageCache: [URL: Image] = [:]
     private static var youtubeAuthorCache: [URL: String] = [:]
 
     /// Load metadata + thumbnail image for a URL.
@@ -24,6 +22,7 @@ final class LinkMetadataLoader: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        // Reset per-load state
         self.metadata = nil
         self.image = nil
 
@@ -32,36 +31,48 @@ final class LinkMetadataLoader: ObservableObject {
             self.youtubeAuthor = nil
         }
 
-        do {
-            let meta = try await fetchMetadata(for: url)
-            self.metadata = meta
-
-            // Load thumbnail/icon
-            self.image = await loadFirstImage(from: meta)
-
-            // Handle YouTube author logic
-            if isYouTube(url: url) {
-                if let existingAuthor,
-                   !existingAuthor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    // We already have a cached author in SharedLink
-                    self.youtubeAuthor = existingAuthor
-
-                } else if let cached = LinkMetadataLoader.youtubeAuthorCache[url] {
-                    // We've already fetched this author in this app session
-                    self.youtubeAuthor = cached
-
-                } else {
-                    // Fetch via oEmbed once, then cache in memory
-                    if let fetched = await fetchYouTubeAuthor(for: url) {
-                        self.youtubeAuthor = fetched
-                        LinkMetadataLoader.youtubeAuthorCache[url] = fetched
-                    } else {
-                        self.youtubeAuthor = nil
-                    }
-                }
+        // ---- 1) Resolve metadata, using in-memory cache first ----
+        let resolvedMetadata: LPLinkMetadata
+        if let cached = LinkMetadataLoader.metadataCache[url] {
+            resolvedMetadata = cached
+        } else {
+            do {
+                let fetched = try await fetchMetadata(for: url)
+                LinkMetadataLoader.metadataCache[url] = fetched
+                resolvedMetadata = fetched
+            } catch {
+                print("LinkMetadataLoader error for \(url): \(error)")
+                return
             }
-        } catch {
-            print("LinkMetadataLoader error for \(url): \(error)")
+        }
+
+        self.metadata = resolvedMetadata
+
+        // ---- 2) Resolve image, also with a cache ----
+        if let cachedImage = LinkMetadataLoader.imageCache[url] {
+            self.image = cachedImage
+        } else if let preview = await loadFirstImage(from: resolvedMetadata) {
+            self.image = preview
+            LinkMetadataLoader.imageCache[url] = preview
+        }
+
+        // ---- 3) YouTube author logic (unchanged in behavior) ----
+        guard isYouTube(url: url) else { return }
+
+        if let existingAuthor,
+           !existingAuthor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            // We already have a cached author in SharedLink
+            self.youtubeAuthor = existingAuthor
+
+        } else if let cachedAuthor = LinkMetadataLoader.youtubeAuthorCache[url] {
+            // We've already fetched this author in this app session
+            self.youtubeAuthor = cachedAuthor
+
+        } else if let fetched = await fetchYouTubeAuthor(for: url) {
+            self.youtubeAuthor = fetched
+            LinkMetadataLoader.youtubeAuthorCache[url] = fetched
+        } else {
+            self.youtubeAuthor = nil
         }
     }
 }
