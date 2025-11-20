@@ -46,6 +46,7 @@ struct SharedLinkCard: View {
             onFavoriteToggle: (() -> Void)? = nil,
             onReact: ((String) -> Void)? = nil
         ) {
+            _loader = StateObject(wrappedValue: LinkMetadataLoader(key: link.url))
         self.link = link
         self.icloudID = icloudID
         self.reactions = reactions
@@ -59,8 +60,9 @@ struct SharedLinkCard: View {
         self.onOpen = onOpen
         self.onFavoriteToggle = onFavoriteToggle
         self.onReact = onReact
+            
     }
-    @StateObject private var loader = LinkMetadataLoader()  
+    @StateObject private var loader: LinkMetadataLoader
     @State private var previewHeight: CGFloat = 200 // default fallback height
     @StateObject private var nameResolver = NameResolver.shared
     private var debugOn: Bool = false
@@ -139,7 +141,7 @@ struct SharedLinkCard: View {
                                     }
                                     .task(id: link.id) {
                                         try? await Task.sleep(for: .milliseconds(120))
-                                        await loader.load(for: link.url)
+                                        await loader.load(for: link.url, existingAuthor: link.author)
                                     }
                                 }
                                 

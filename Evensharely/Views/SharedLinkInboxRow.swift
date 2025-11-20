@@ -200,7 +200,25 @@ struct SharedLinkInboxRow: View {
 
     var onAuthorResolved: ((SharedLink, String) -> Void)? = nil
     
-    @StateObject private var loader = LinkMetadataLoader()
+    @StateObject private var loader: LinkMetadataLoader
+
+    init(
+        link: SharedLink,
+        isRead: Bool?,
+        showReadDot: Bool,
+        onOpen: @escaping () -> Void,
+        onAuthorResolved: ((SharedLink, String) -> Void)? = nil
+    ) {
+        // NEW — ensure loader is uniquely keyed to the URL so it persists across row reloads
+        _loader = StateObject(wrappedValue: LinkMetadataLoader(key: link.url))
+
+        self.link = link
+        self.isRead = isRead
+        self.showReadDot = showReadDot
+        self.onOpen = onOpen
+        self.onAuthorResolved = onAuthorResolved
+    }
+
     @State private var loadTask: Task<Void, Never>? = nil
     
     // Retrieve Platform specific formatted link text
