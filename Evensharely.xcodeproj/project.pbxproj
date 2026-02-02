@@ -102,6 +102,7 @@
 				Models/LinkPreviewPlain.swift,
 				Models/ProfileCache.swift,
 				Models/SharedLink.swift,
+				Models/TagPolicy.swift,
 				Models/UserProfile.swift,
 				Views/LinkItemView.swift,
 				Views/NameResolver.swift,

@@ -29,6 +29,15 @@ struct MainTabView: View {
             .tabItem {
                 Label("Inbox", systemImage: "tray")
             }
+
+            // Search Tab
+            SearchView(
+                viewModel: viewModel,
+                tagEditingLink: $tagEditingLink
+            )
+            .tabItem {
+                Label("Search", systemImage: "magnifyingglass")
+            }
             
             
             // Sent Tab

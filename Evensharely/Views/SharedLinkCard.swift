@@ -262,9 +262,10 @@ struct SharedLinkCard: View {
                 // --------------------//
                 //Display Tags
                 // --------------------//
-                if !link.tags.isEmpty {
+                let visibleTags = TagPolicy.visibleTags(from: link.tags)
+                if !visibleTags.isEmpty {
                     HStack(alignment: .center, spacing: 10) {
-                        Text("\(link.tags.joined(separator: ", "))")
+                        Text("\(visibleTags.joined(separator: ", "))")
                         Spacer()
                     }
                     .font(.caption2)

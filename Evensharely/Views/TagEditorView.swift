@@ -16,7 +16,8 @@ struct TagEditorView: View {
 
     init(sharedLink: SharedLink, onSave: @escaping ([String]) -> Void) {
         self.initialTags = sharedLink.tags
-        _draftTags = State(initialValue: sharedLink.tags.joined(separator: ", "))
+        let visibleTags = TagPolicy.visibleTags(from: sharedLink.tags)
+        _draftTags = State(initialValue: visibleTags.joined(separator: ", "))
         self.onSave = onSave
     }
 
@@ -38,10 +39,14 @@ struct TagEditorView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
                         // Split & trim into an array of non‑empty tags
-                        let tags = draftTags
+                        let visibleTags = draftTags
                             .split(separator: ",")
                             .map { $0.trimmingCharacters(in: .whitespaces) }
                             .filter { !$0.isEmpty }
+                        let tags = TagPolicy.mergeHiddenTags(
+                            originalTags: initialTags,
+                            editedVisibleTags: visibleTags
+                        )
                         onSave(tags)
                         dismiss()
                     }
