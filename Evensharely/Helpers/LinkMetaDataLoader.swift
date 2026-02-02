@@ -194,23 +194,7 @@ final class LinkMetadataLoader: ObservableObject {
     // MARK: - LP Metadata Provider (One-shot)
 
     private func fetchMetadata(for url: URL) async throws -> LPLinkMetadata {
-        let provider = LPMetadataProvider() // one-shot, must create new each time
-
-        return try await withCheckedThrowingContinuation { continuation in
-            provider.startFetchingMetadata(for: url) { metadata, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if let metadata {
-                    continuation.resume(returning: metadata)
-                } else {
-                    continuation.resume(throwing:
-                        NSError(domain: "LinkMetadataLoader",
-                                code: -1,
-                                userInfo: [NSLocalizedDescriptionKey: "Metadata fetch failed"])
-                    )
-                }
-            }
-        }
+        try await LPMetadataCache.shared.metadata(for: url)
     }
 
     // MARK: - Image Loading

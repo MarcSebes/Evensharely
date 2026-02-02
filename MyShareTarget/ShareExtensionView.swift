@@ -64,6 +64,9 @@ struct ShareExtensionView: View {
         provider.startFetchingMetadata(for: url) { metadata, error in
             if let metadata = metadata {
                 DispatchQueue.main.async { linkMetadata = metadata }
+                Task {
+                    await LPMetadataCache.shared.store(metadata, for: url)
+                }
             } else if let error = error {
                 NSLog("[EXTLOG]: ❌ Failed to fetch metadata: %{public}@", error.localizedDescription)
             }
@@ -239,4 +242,3 @@ struct ShareExtensionView: View {
     }
 
 }
-

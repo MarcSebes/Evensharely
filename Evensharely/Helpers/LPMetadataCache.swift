@@ -105,6 +105,13 @@ final class LPMetadataCache {
         return metadata
     }
 
+    /// Store metadata that was fetched elsewhere (e.g., Share Extension) into cache.
+    func store(_ metadata: LPLinkMetadata, for url: URL) async {
+        let key = url.absoluteString as NSString
+        mem.setObject(metadata, forKey: key)
+        await saveToDisk(metadata, for: url)
+    }
+
     // MARK: - File I/O (isolated to fileQueue)
 
     private func fileURL(for url: URL) -> URL {
