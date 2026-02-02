@@ -39,6 +39,7 @@ class LinkViewModel: ObservableObject {
         static let maxLookbackDays = 180
         static let minLinksThreshold = 5 // Minimum links needed before stopping pagination
         static let batchSize = 50 // CloudKit query limit
+        static let metadataPrefetchCount = 12 // Prefetch top N newest links per page
     }
     
     // MARK: - Pagination State
@@ -353,6 +354,9 @@ class LinkViewModel: ObservableObject {
         
         // Add new links efficiently
         appendNewLinks(newLinks)
+
+        // Warm metadata cache for newest links (off main thread)
+        prefetchMetadata(for: newLinks)
         
         // Save to cache (async to avoid blocking)
         Task { @MainActor [weak self] in
@@ -398,6 +402,29 @@ class LinkViewModel: ObservableObject {
         
         // Alternative: More efficient insertion for already-sorted data
         // This could be optimized further with binary search insertion
+    }
+
+    private func prefetchMetadata(for links: [SharedLink]) {
+        guard !links.isEmpty else { return }
+
+        let sorted = links.sorted { $0.date > $1.date }
+        var seen = Set<String>()
+        var urls: [URL] = []
+        urls.reserveCapacity(PaginationConfig.metadataPrefetchCount)
+
+        for link in sorted {
+            let key = link.url.absoluteString
+            guard !seen.contains(key) else { continue }
+            seen.insert(key)
+            urls.append(link.url)
+            if urls.count >= PaginationConfig.metadataPrefetchCount { break }
+        }
+
+        Task.detached(priority: .utility) {
+            for url in urls {
+                _ = try? await LPMetadataCache.shared.metadata(for: url)
+            }
+        }
     }
     
     private func continueToNextPage() {
